@@ -2,7 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "../pages/auth/sign-in/SignIn";
 import SignUp from "../pages/auth/sign-up/SignUp";
-import ForgotPassword from "../auth/ForgotPassword";
+import ForgotPasswordPage from "../pages/auth/forgot-password/ForgotPassword";
+import NotFound from "../pages/NotFound";
 
 import Index from "../pages/Index";
 import DashboardContent from "../pages/dashboard/DashboardContent";
@@ -38,7 +39,8 @@ function AppRouter() {
 
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
