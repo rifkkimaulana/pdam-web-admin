@@ -17,6 +17,8 @@ import ForgotPassword from "./components/ForgotPassword";
 import AppTheme from "../../shared-theme/AppTheme";
 import ColorModeSelect from "../../shared-theme/ColorModeSelect";
 import { GoogleIcon, FacebookIcon, SitemarkIcon } from "./components/CustomIcons";
+import { login } from "../../../utils/auth";
+import { useNavigate } from "react-router-dom";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -62,6 +64,8 @@ export default function SignIn(props) {
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
   const [open, setOpen] = React.useState(false);
+  const [loginError, setLoginError] = React.useState("");
+  const navigate = useNavigate();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -71,36 +75,50 @@ export default function SignIn(props) {
     setOpen(false);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     if (emailError || passwordError) {
-      event.preventDefault();
       return;
     }
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    setLoginError("");
+    try {
+      const res = await login({
+        emailOrUsername: data.get("emailOrUsername"),
+        password: data.get("password"),
+      });
+      // Simpan token dan user ke localStorage
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      // Set token ke header axios untuk request selanjutnya
+      import("../../../utils/api").then(({ default: api }) => {
+        api.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
+      });
+      // Redirect ke dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      setLoginError(err.response?.data?.message || "Login gagal. Silakan cek kembali data Anda.");
+    }
   };
 
   const validateInputs = () => {
-    const email = document.getElementById("email");
+    const emailOrUsername = document.getElementById("emailOrUsername");
     const password = document.getElementById("password");
 
     let isValid = true;
 
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+    if (!emailOrUsername || !emailOrUsername.value) {
       setEmailError(true);
-      setEmailErrorMessage("Please enter a valid email address.");
+      setEmailErrorMessage("Email atau username wajib diisi.");
       isValid = false;
     } else {
       setEmailError(false);
       setEmailErrorMessage("");
     }
 
-    if (!password.value || password.value.length < 6) {
+    if (!password || password.value.length < 6) {
       setPasswordError(true);
-      setPasswordErrorMessage("Password must be at least 6 characters long.");
+      setPasswordErrorMessage("Password minimal 6 karakter.");
       isValid = false;
     } else {
       setPasswordError(false);
@@ -131,6 +149,11 @@ export default function SignIn(props) {
               gap: 2,
             }}
           >
+            {loginError && (
+              <Typography color="error" sx={{ mb: 1, textAlign: "center" }}>
+                {loginError}
+              </Typography>
+            )}
             <FormControl>
               <FormLabel htmlFor="emailOrUsername">Email atau Username</FormLabel>
               <TextField
