@@ -29,17 +29,21 @@ export default function NavbarBreadcrumbs() {
     tagihan: "Tagihan",
     komplain: "Keluhan & Komplain",
     penugasan: "Penugasan Petugas",
+    list: "List Paket",
   };
 
-  const mainTitle = pathnames.length ? pageTitles[pathnames[0]] || "Dashboard" : "Home";
-  const subTitle = pathnames.length > 1 ? pageTitles[pathnames[1]] : "";
+  // Ambil judul utama dan sub dari path
+  const mainTitle = pathnames[0] ? pageTitles[pathnames[0]] || pathnames[0] : "Home";
+  const subTitle = pathnames[1] ? pageTitles[pathnames[1]] || pathnames[1] : "";
 
   return (
     <StyledBreadcrumbs aria-label="breadcrumb" separator={<NavigateNextRoundedIcon fontSize="small" />}>
       <Typography variant="body1">{mainTitle}</Typography>
-      <Typography variant="body1" sx={{ color: "text.primary", fontWeight: 600 }}>
-        {subTitle}
-      </Typography>
+      {subTitle && (
+        <Typography variant="body1" sx={{ color: "text.primary", fontWeight: 600 }}>
+          {subTitle.charAt(0).toUpperCase() + subTitle.slice(1)}
+        </Typography>
+      )}
     </StyledBreadcrumbs>
   );
 }

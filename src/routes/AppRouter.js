@@ -27,7 +27,7 @@ function AppRouter() {
           <Route path="dashboard" element={<DashboardContent />} />
           <Route path="laporan" element={<LaporanContent />} />
           <Route path="pelanggan" element={<PelangganContent />} />
-          <Route path="paket" element={<PaketContent />} />
+          <Route path="paket/list" element={<PaketContent />} />
           <Route path="tagihan" element={<TagihanContent />} />
           <Route path="komplain" element={<KomplainContent />} />
           <Route path="penugasan" element={<PenugasanContent />} />
