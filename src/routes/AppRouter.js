@@ -22,12 +22,14 @@ import TambahPaket from "../pages/paket/TambahPaket";
 import EditPaket from "../pages/paket/EditPaket";
 import StafContent from "../pages/staf/StafContent";
 import { getToken } from "../utils/auth";
+import { toast } from "react-toastify";
 
 function PrivateRoute({ children }) {
   const navigate = useNavigate();
   useEffect(() => {
     if (!getToken()) {
       navigate("/sign-in");
+      toast.error("Silahkan login terlebih dahulu!");
     }
   }, [navigate]);
   return getToken() ? children : null;
