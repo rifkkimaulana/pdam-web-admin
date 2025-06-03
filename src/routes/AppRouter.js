@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import SignIn from "../pages/auth/sign-in/SignIn";
 import SignUp from "../pages/auth/sign-up/SignUp";
 import ForgotPasswordPage from "../pages/auth/forgot-password/ForgotPassword";
@@ -17,30 +17,156 @@ import PengaturanContent from "../pages/pengaturan/PengaturanContent";
 import KewajibanContent from "../pages/kewajiban/KewajibanContent";
 
 import UserManagement from "../pages/manajemen-user/ManajemenUser";
+import FormUser from "../pages/manajemen-user/FormUser";
 import TambahPaket from "../pages/paket/TambahPaket";
 import EditPaket from "../pages/paket/EditPaket";
+import StafContent from "../pages/staf/StafContent";
+import { getToken } from "../utils/auth";
+
+function PrivateRoute({ children }) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!getToken()) {
+      navigate("/sign-in");
+    }
+  }, [navigate]);
+  return getToken() ? children : null;
+}
 
 function AppRouter() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Index />}>
-          <Route index element={<DashboardContent />} />
-          <Route path="dashboard" element={<DashboardContent />} />
-          <Route path="laporan" element={<LaporanContent />} />
-          <Route path="pelanggan" element={<PelangganContent />} />
-          <Route path="paket/list" element={<PaketContent />} />
-          <Route path="tagihan" element={<TagihanContent />} />
-          <Route path="komplain" element={<KomplainContent />} />
-          <Route path="penugasan" element={<PenugasanContent />} />
-          <Route path="pengaturan" element={<PengaturanContent />} />
-          <Route path="kewajiban" element={<KewajibanContent />} />
-
-          <Route path="manajemen-user" element={<UserManagement />} />
-          <Route path="paket/tambah" element={<TambahPaket />} />
-          <Route path="/paket/edit/:id" element={<EditPaket />} />
+          <Route
+            index
+            element={
+              <PrivateRoute>
+                <DashboardContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="dashboard"
+            element={
+              <PrivateRoute>
+                <DashboardContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="laporan"
+            element={
+              <PrivateRoute>
+                <LaporanContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pelanggan"
+            element={
+              <PrivateRoute>
+                <PelangganContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="paket/list"
+            element={
+              <PrivateRoute>
+                <PaketContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="tagihan"
+            element={
+              <PrivateRoute>
+                <TagihanContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="komplain"
+            element={
+              <PrivateRoute>
+                <KomplainContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="penugasan"
+            element={
+              <PrivateRoute>
+                <PenugasanContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengaturan"
+            element={
+              <PrivateRoute>
+                <PengaturanContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="kewajiban"
+            element={
+              <PrivateRoute>
+                <KewajibanContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="manajemen-user"
+            element={
+              <PrivateRoute>
+                <UserManagement />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="manajemen-user/tambah"
+            element={
+              <PrivateRoute>
+                <FormUser />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="user/edit/:id"
+            element={
+              <PrivateRoute>
+                <FormUser />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="paket/tambah"
+            element={
+              <PrivateRoute>
+                <TambahPaket />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/paket/edit/:id"
+            element={
+              <PrivateRoute>
+                <EditPaket />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="staf"
+            element={
+              <PrivateRoute>
+                <StafContent />
+              </PrivateRoute>
+            }
+          />
         </Route>
-
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />

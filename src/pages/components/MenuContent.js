@@ -23,6 +23,7 @@ const mainListItems = [
   { text: "Dashboard", icon: <DashboardRoundedIcon />, link: "/dashboard" },
   { text: "Laporan", icon: <BarChartRoundedIcon />, link: "/laporan" },
   { text: "Pelanggan", icon: <GroupsRoundedIcon />, link: "/pelanggan" },
+  { text: "Staf", icon: <GroupsRoundedIcon />, link: "/staf" },
   { text: "Paket", icon: <InventoryRoundedIcon />, link: "/paket/list" },
   { text: "Tagihan", icon: <ReceiptRoundedIcon />, link: "/tagihan" },
   { text: "Komplain", icon: <ReportProblemRoundedIcon />, link: "/komplain" },
