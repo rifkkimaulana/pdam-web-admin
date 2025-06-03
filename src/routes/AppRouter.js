@@ -17,6 +17,8 @@ import PengaturanContent from "../pages/pengaturan/PengaturanContent";
 import KewajibanContent from "../pages/kewajiban/KewajibanContent";
 
 import UserManagement from "../pages/manajemen-user/ManajemenUser";
+import TambahPaket from "../pages/paket/TambahPaket";
+import EditPaket from "../pages/paket/EditPaket";
 
 function AppRouter() {
   return (
@@ -35,6 +37,8 @@ function AppRouter() {
           <Route path="kewajiban" element={<KewajibanContent />} />
 
           <Route path="manajemen-user" element={<UserManagement />} />
+          <Route path="paket/tambah" element={<TambahPaket />} />
+          <Route path="/paket/edit/:id" element={<EditPaket />} />
         </Route>
 
         <Route path="/sign-in" element={<SignIn />} />

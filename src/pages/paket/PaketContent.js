@@ -8,6 +8,7 @@ import TableDropdown from "../components/TableDropdown";
 import ReusableDataGrid from "../components/ReusableDataGrid";
 import AddIcon from "@mui/icons-material/Add";
 import { useTheme } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 
 export default function PaketContent() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,7 +18,9 @@ export default function PaketContent() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selected, setSelected] = useState([]);
+  const [openDialogTambah, setOpenDialogTambah] = useState(false);
   const theme = useTheme();
+  const navigate = useNavigate();
   const open = Boolean(anchorEl);
 
   // Kolom untuk DataGrid
@@ -59,8 +62,8 @@ export default function PaketContent() {
 
   // Data untuk DataGrid
   const filteredRows = rows.filter((row) => row.nama_paket.toLowerCase().includes(searchTerm.toLowerCase()));
-  // DataGrid butuh id unik, gunakan no
-  const dataGridRows = filteredRows.map((row) => ({ ...row, id: row.no }));
+  // DataGrid butuh id unik, gunakan id dari database jika ada, fallback ke no
+  const dataGridRows = filteredRows.map((row) => ({ ...row, id: row.id ?? row.no }));
 
   useEffect(() => {
     setLoading(true);
@@ -95,20 +98,25 @@ export default function PaketContent() {
     setAnchorEl(null);
   };
   const handleTambahPaket = () => {
-    handleMenuClose();
-    // TODO: aksi tambah paket
-    alert("Tambah Paket");
+    navigate("/paket/tambah");
   };
-  const handleHapusPaket = () => {
-    handleMenuClose();
-    // TODO: aksi hapus paket terpilih
-    alert("Hapus Paket yang di-select");
+  const handleDialogTambahClose = () => {};
+  const handleDialogTambahSubmit = (form) => {
+    // TODO: Integrasi API tambah paket
+    setRows((prev) => [
+      {
+        ...form,
+        no: prev.length + 1,
+        biaya_admin: Number(form.biaya_admin),
+        id: prev.length + 1,
+      },
+      ...prev,
+    ]);
   };
 
   // Handler untuk edit dan hapus
   const handleEdit = (row) => {
-    // TODO: implementasi aksi edit
-    alert(`Edit data: ${row.nama_paket}`);
+    navigate(`/paket/edit/${row.id}`);
   };
 
   const handleDelete = (row) => {
@@ -129,6 +137,11 @@ export default function PaketContent() {
     } else {
       setSelected([]);
     }
+  };
+
+  const handleHapusPaket = () => {
+    // TODO: aksi hapus paket terpilih
+    alert("Hapus Paket yang di-select");
   };
 
   return (

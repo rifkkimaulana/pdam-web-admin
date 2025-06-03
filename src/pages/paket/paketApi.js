@@ -10,3 +10,5 @@ export const getAllPaket = async () => {
   //console.log(response.data[0].blok_tarif);
   return response;
 };
+
+export const getPaketById = (id) => api.get(`/paket/${id}`);
