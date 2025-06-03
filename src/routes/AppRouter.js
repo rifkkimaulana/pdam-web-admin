@@ -21,6 +21,7 @@ import FormUser from "../pages/manajemen-user/FormUser";
 import TambahPaket from "../pages/paket/TambahPaket";
 import EditPaket from "../pages/paket/EditPaket";
 import StafContent from "../pages/staf/StafContent";
+import FormStaf from "../pages/staf/formStaf";
 import { getToken } from "../utils/auth";
 import { toast } from "react-toastify";
 
@@ -165,6 +166,22 @@ function AppRouter() {
             element={
               <PrivateRoute>
                 <StafContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="staf/tambah"
+            element={
+              <PrivateRoute>
+                <FormStaf />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="staf/edit/:id"
+            element={
+              <PrivateRoute>
+                <FormStaf />
               </PrivateRoute>
             }
           />
