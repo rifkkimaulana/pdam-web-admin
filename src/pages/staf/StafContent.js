@@ -20,8 +20,19 @@ export default function StafContent() {
   useEffect(() => {
     const loadStafData = async () => {
       try {
-        const data = await fetchStafData();
-        setStafData(data);
+        const stafList = await fetchStafData();
+
+        const mappedStaf = stafList.map((user, idx) => ({
+          ...user.staf,
+          id: user.id,
+          nama_lengkap: user.nama_lengkap,
+          alamat: user.alamat,
+          jabatan: user.staf?.jabatan || "-",
+          user_pengelola: user.staf?.pengelola_id || "-",
+          perusahaan: user.staf?.pengelola?.nama_pengelola || "-",
+          user: user,
+        }));
+        setStafData(mappedStaf);
         toast.success("Berhasil memuat data staf.", { position: "top-right" });
       } catch (error) {
         console.error("Error fetching staf data:", error);
@@ -104,10 +115,10 @@ export default function StafContent() {
     .map((row, index) => ({
       ...row,
       id: index + 1,
-      nama_lengkap: row.user?.nama_lengkap || "-",
-      alamat: row.user?.alamat || "-",
-      user_pengelola: row.user_pengelola?.nama_lengkap || "-",
-      perusahaan: row.pengelola?.nama_pengelola || "-",
+      nama_lengkap: row.nama_lengkap || "-",
+      alamat: row.alamat || "-",
+      user_pengelola: row.user_pengelola || "-",
+      perusahaan: row.perusahaan || "-",
     }));
 
   return (

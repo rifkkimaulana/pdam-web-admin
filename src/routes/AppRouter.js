@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate, Form } from "react-router-dom";
 import SignIn from "../pages/auth/sign-in/SignIn";
 import SignUp from "../pages/auth/sign-up/SignUp";
 import ForgotPasswordPage from "../pages/auth/forgot-password/ForgotPassword";
@@ -21,7 +21,8 @@ import FormUser from "../pages/manajemen-user/FormUser";
 import TambahPaket from "../pages/paket/TambahPaket";
 import EditPaket from "../pages/paket/EditPaket";
 import StafContent from "../pages/staf/StafContent";
-import FormStaf from "../pages/staf/formStaf";
+import FormTambahStaf from "../pages/staf/formTambahStaf";
+import FormUbahStaf from "../pages/staf/formUbahStaf";
 import { getToken } from "../utils/auth";
 import { toast } from "react-toastify";
 
@@ -173,7 +174,7 @@ function AppRouter() {
             path="staf/tambah"
             element={
               <PrivateRoute>
-                <FormStaf />
+                <FormTambahStaf />
               </PrivateRoute>
             }
           />
@@ -181,7 +182,7 @@ function AppRouter() {
             path="staf/edit/:id"
             element={
               <PrivateRoute>
-                <FormStaf />
+                <FormUbahStaf />
               </PrivateRoute>
             }
           />

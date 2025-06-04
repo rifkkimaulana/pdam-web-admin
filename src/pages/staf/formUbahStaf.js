@@ -57,7 +57,6 @@ export default function FormTambahStaf() {
               <TextField label="Nomor Identitas" name="nomor_identitas" variant="outlined" fullWidth />
               <TextField select label="Nama Pengelola" name="pengelola_id" variant="outlined" fullWidth SelectProps={{ native: true }}>
                 <option value="">Pilih Pengelola</option>
-                {/* Opsi pengelola di sini */}
               </TextField>
               <TextField label="Nama Jabatan Staf" name="jabatan_staf" variant="outlined" fullWidth />
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -68,7 +67,6 @@ export default function FormTambahStaf() {
                   Upload File
                   <input name="file_identitas" type="file" hidden />
                 </Button>
-                {/* Nama file identitas yang diupload */}
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 <Typography variant="body2" color="text.secondary">
@@ -78,7 +76,6 @@ export default function FormTambahStaf() {
                   Upload Foto
                   <input name="pictures" type="file" hidden />
                 </Button>
-                {/* Nama file foto profil yang diupload */}
               </Box>
             </Box>
           </form>
