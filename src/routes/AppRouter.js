@@ -16,13 +16,14 @@ import PenugasanContent from "../pages/penugasan/PenugasanContent";
 import PengaturanContent from "../pages/pengaturan/PengaturanContent";
 import KewajibanContent from "../pages/kewajiban/KewajibanContent";
 
-import UserManagement from "../pages/manajemen-user/ManajemenUser";
-import FormUser from "../pages/manajemen-user/FormUser";
+import FormUser from "../pages/pengelola/FormUser";
 import TambahPaket from "../pages/paket/TambahPaket";
 import EditPaket from "../pages/paket/EditPaket";
 import StafContent from "../pages/staf/StafContent";
 import FormTambahStaf from "../pages/staf/formTambahStaf";
 import FormUbahStaf from "../pages/staf/formUbahStaf";
+
+import Pengelola from "../pages/pengelola/PengelolaContent";
 import { getToken } from "../utils/auth";
 import { toast } from "react-toastify";
 
@@ -123,15 +124,15 @@ function AppRouter() {
             }
           />
           <Route
-            path="manajemen-user"
+            path="pengelola"
             element={
               <PrivateRoute>
-                <UserManagement />
+                <Pengelola />
               </PrivateRoute>
             }
           />
           <Route
-            path="manajemen-user/tambah"
+            path="pengelola/tambah"
             element={
               <PrivateRoute>
                 <FormUser />

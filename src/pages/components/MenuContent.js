@@ -33,7 +33,7 @@ const mainListItems = [
 const secondaryListItems = [
   { text: "Pengaturan", icon: <SettingsApplicationsRoundedIcon />, link: "/pengaturan" },
   { text: "Kewajiban", icon: <FactCheckRoundedIcon />, link: "/kewajiban" },
-  { text: "Manejemen User", icon: <GroupsRoundedIcon />, link: "/manajemen-user" },
+  { text: "pengelola", icon: <GroupsRoundedIcon />, link: "/pengelola" },
 ];
 
 export default function MenuContent() {

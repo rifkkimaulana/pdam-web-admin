@@ -1,12 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { Box, TextField, Typography, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import React, { useState } from "react";
+import {
+  Menu,
+  MenuItem,
+  IconButton,
+  Box,
+  TextField,
+  Typography,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+} from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Edit, Delete } from "@mui/icons-material";
 import ActionIconButton from "../components/ActionIconButton";
-import TableDropdown from "../components/TableDropdown";
-import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
-import { getAllUsers } from "./userApi";
+import { Add, Update, Verified, FilterList } from "@mui/icons-material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,7 +30,6 @@ export default function UserManagement() {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const theme = useTheme();
-  const navigate = useNavigate();
 
   const columns = [
     { field: "namaLengkap", headerName: "Nama Lengkap", flex: 1, minWidth: 180 },
@@ -36,12 +47,11 @@ export default function UserManagement() {
       disableColumnMenu: true,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
+      renderCell: () => (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 1, height: "100%" }}>
           <ActionIconButton
             color={theme.palette.primary.main}
             title="Edit"
-            onClick={() => handleEdit(params.row)}
             sx={{
               width: "30px",
               height: "30px",
@@ -56,7 +66,6 @@ export default function UserManagement() {
           <ActionIconButton
             color={theme.palette.error.main}
             title="Hapus"
-            onClick={() => handleDelete(params.row)}
             sx={{
               width: "30px",
               height: "30px",
@@ -73,44 +82,8 @@ export default function UserManagement() {
     },
   ];
 
-  useEffect(() => {
-    setLoading(true);
-    getAllUsers()
-      .then((data) => {
-        console.log("Data fetched from API:", data); // Log data fetched from API
-        setRows(data || []);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching users:", error); // Log error if fetching fails
-        setLoading(false);
-      });
-  }, []);
-
   const filteredRows = rows.filter((row) => row.namaLengkap?.toLowerCase().includes(searchTerm.toLowerCase()));
   const dataGridRows = filteredRows.map((row, idx) => ({ ...row, id: row.id ?? idx + 1 }));
-
-  const handleEdit = (row) => {
-    navigate(`/user/edit/${row.id}`);
-  };
-
-  const handleDelete = (row) => {
-    setRowToDelete(row);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (rowToDelete) {
-      setRows((prev) => prev.filter((item) => item.id !== rowToDelete.id));
-      setRowToDelete(null);
-      setOpenDeleteDialog(false);
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setRowToDelete(null);
-    setOpenDeleteDialog(false);
-  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -122,11 +95,30 @@ export default function UserManagement() {
   };
 
   const handleTambahUser = () => {
-    navigate("/manajemen-user/tambah");
+    alert("Navigasi ke tambah pengguna");
   };
 
   const handleHapusUser = () => {
     alert("Hapus Pengguna yang di-select");
+  };
+
+  const [anchorElMenu, setAnchorElMenu] = useState(null); // Untuk dropdown menu
+  const [anchorElFilter, setAnchorElFilter] = useState(null); // Untuk dropdown filter
+
+  const handleMenuClick = (event) => {
+    setAnchorElMenu(event.currentTarget); // Menampilkan menu
+  };
+
+  const handleMenuClose = () => {
+    setAnchorElMenu(null); // Menutup menu
+  };
+
+  const handleFilterClick = (event) => {
+    setAnchorElFilter(event.currentTarget); // Menampilkan filter dropdown
+  };
+
+  const handleFilterClose = () => {
+    setAnchorElFilter(null); // Menutup filter dropdown
   };
 
   return (
@@ -137,47 +129,74 @@ export default function UserManagement() {
         </Typography>
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <TextField
-            label=""
+            label="Cari Jabatan"
             variant="outlined"
             size="small"
-            value={searchTerm}
+            sx={{ width: "250px", height: "40px" }}
             onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{
-              startAdornment: (
-                <Box component="span" sx={{ color: "text.secondary", mr: 1 }}>
-                  <svg width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M14.5 14.5L19 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                </Box>
-              ),
+              sx: { height: "40px", boxSizing: "border-box", display: "flex", alignItems: "center" },
             }}
+          />
+
+          <Button
+            variant="outlined"
+            color="primary"
             sx={{
-              width: { xs: "100%", sm: 250 },
-              background: theme.palette.background.paper,
-              borderRadius: 1,
-              boxShadow: 1,
-              "& .MuiOutlinedInput-root": {
-                pr: 0,
-              },
+              height: "40px",
+              boxShadow: "none",
+              px: 3,
+              minWidth: 0,
+              display: "flex",
+              alignItems: "center",
             }}
-            placeholder="Cari nama pengguna..."
-          />
-          <TableDropdown
-            label="Menu"
-            menuItems={[
-              {
-                label: "Tambah Pengguna",
-                icon: <Edit fontSize="small" style={{ marginRight: 8 }} />,
-                onClick: handleTambahUser,
-              },
-              {
-                label: "Hapus Pengguna",
-                icon: <Delete fontSize="small" style={{ marginRight: 8 }} />,
-                onClick: handleHapusUser,
-              },
-            ]}
-          />
+            endIcon={<ArrowDropDownIcon />} // Menambahkan ikon dropdown
+            onClick={handleFilterClick}
+          >
+            Filter
+          </Button>
+
+          {/* Dropdown Filter */}
+          <Menu anchorEl={anchorElFilter} open={Boolean(anchorElFilter)} onClose={handleFilterClose}>
+            <MenuItem onClick={handleFilterClose}>Pengelola Aktif</MenuItem>
+            <MenuItem onClick={handleFilterClose}>Pengelola Tidak Aktif</MenuItem>
+          </Menu>
+
+          <Button
+            variant="contained"
+            color="success"
+            sx={{
+              height: "40px",
+              boxShadow: "none",
+              px: 3,
+              minWidth: 0,
+              display: "flex",
+              alignItems: "center",
+            }}
+            endIcon={<ArrowDropDownIcon />} // Menambahkan ikon dropdown
+            onClick={handleMenuClick}
+          >
+            Menu
+          </Button>
+
+          <Menu anchorEl={anchorElMenu} open={Boolean(anchorElMenu)} onClose={handleMenuClose}>
+            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }}>
+              <Add style={{ fontSize: 20, marginRight: 8 }} />
+              Tambah Pengelola
+            </MenuItem>
+            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }}>
+              <Update style={{ fontSize: 20, marginRight: 8 }} />
+              Perbaharui Langganan
+            </MenuItem>
+            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }}>
+              <Verified style={{ fontSize: 20, marginRight: 8 }} />
+              Verifikasi Pembayaran
+            </MenuItem>
+            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }}>
+              <Delete style={{ fontSize: 20, marginRight: 8 }} />
+              Hapus Pilihan
+            </MenuItem>
+          </Menu>
         </Box>
       </Box>
       <DataGrid
@@ -191,17 +210,16 @@ export default function UserManagement() {
         pagination
         loading={loading}
       />
-      {/* Dialog Konfirmasi Hapus */}
-      <Dialog open={openDeleteDialog} onClose={handleCancelDelete}>
+      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
         <DialogTitle>Konfirmasi Hapus</DialogTitle>
         <DialogContent>
           Apakah Anda yakin ingin menghapus data pengguna <b>{rowToDelete?.namaLengkap}</b>?
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete} color="primary">
+          <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
             Batal
           </Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+          <Button onClick={() => setOpenDeleteDialog(false)} color="error" variant="contained">
             Ya, Hapus
           </Button>
         </DialogActions>

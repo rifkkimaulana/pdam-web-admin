@@ -1,39 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { TextField, Grid, Box, Typography, MenuItem } from "@mui/material";
-import { getPaketList, getBlokTarifByPaket } from "../userApi";
 import PaketTarifTable from "./PaketTarifTable";
 
 export default function FormUserJabatanFields({ userData, handleChange, handleFileChange, pengelolaList }) {
-  const [paketList, setPaketList] = useState([]);
-  const [blokTarif, setBlokTarif] = useState([]);
-
-  useEffect(() => {
-    // Ambil paket hanya jika pengelolaId dipilih dan jabatan Pelanggan
-    if (userData.jabatan === "Pelanggan" && userData.pengelolaId) {
-      getPaketList()
-        .then((data) => {
-          // Filter paket berdasarkan pengelola_id jika field tersedia
-          if (data.length && data[0].pengelola_id !== undefined) {
-            setPaketList(data.filter((p) => String(p.pengelola_id) === String(userData.pengelolaId)));
-          } else {
-            setPaketList(data);
-          }
-        })
-        .catch(() => setPaketList([]));
-    } else {
-      setPaketList([]);
-    }
-  }, [userData.jabatan, userData.pengelolaId]);
-
-  useEffect(() => {
-    if (userData.jabatan === "Pelanggan" && userData.paketId) {
-      getBlokTarifByPaket(userData.paketId)
-        .then(setBlokTarif)
-        .catch(() => setBlokTarif([]));
-    } else {
-      setBlokTarif([]);
-    }
-  }, [userData.jabatan, userData.paketId]);
+  const [paketList] = useState([
+    { id: 1, nama_paket: "Paket A" },
+    { id: 2, nama_paket: "Paket B" },
+    { id: 3, nama_paket: "Paket C" },
+  ]);
+  const [blokTarif] = useState([
+    { tarif: "Tarif 1", harga: "1000" },
+    { tarif: "Tarif 2", harga: "2000" },
+  ]);
 
   return (
     <Grid container spacing={2} direction="column">
@@ -55,6 +33,7 @@ export default function FormUserJabatanFields({ userData, handleChange, handleFi
           <MenuItem value="Staf">Staf</MenuItem>
         </TextField>
       </Grid>
+
       {/* Pengelola untuk Pelanggan */}
       {userData.jabatan === "Pelanggan" && (
         <>
@@ -115,6 +94,7 @@ export default function FormUserJabatanFields({ userData, handleChange, handleFi
           </Grid>
         </>
       )}
+
       {/* Pengelola */}
       {userData.jabatan === "Pengelola" && (
         <>
@@ -171,6 +151,7 @@ export default function FormUserJabatanFields({ userData, handleChange, handleFi
           </Grid>
         </>
       )}
+
       {/* Staf */}
       {userData.jabatan === "Staf" && (
         <>

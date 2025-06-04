@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem, Box, CircularProgress } from "@mui/material";
-import { getPelangganById, createPelanggan, updatePelanggan } from "./pelangganApi";
-import { getPengelolaList } from "../manajemen-user/userApi";
 
 const initialState = {
   user_id: "",
@@ -11,50 +9,32 @@ const initialState = {
   status: "enable",
 };
 
-export default function FormPelanggan({ open, onClose, onSuccess, pelangganId }) {
+export default function FormPelanggan({ open, onClose, onSuccess }) {
   const [form, setForm] = useState(initialState);
   const [loading, setLoading] = useState(false);
-  const [pengelolaList, setPengelolaList] = useState([]);
-  const isEdit = Boolean(pelangganId);
-
-  useEffect(() => {
-    setForm(initialState);
-    if (open) {
-      getPengelolaList().then(setPengelolaList);
-      if (isEdit) {
-        setLoading(true);
-        getPelangganById(pelangganId).then((data) => {
-          setForm({ ...data });
-          setLoading(false);
-        });
-      }
-    }
-  }, [open, pelangganId]);
+  const [pengelolaList] = useState([
+    { id: 1, nama_pengelola: "Pengelola A" },
+    { id: 2, nama_pengelola: "Pengelola B" },
+    { id: 3, nama_pengelola: "Pengelola C" },
+  ]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      if (isEdit) {
-        await updatePelanggan(pelangganId, form);
-      } else {
-        await createPelanggan(form);
-      }
+    setTimeout(() => {
       onSuccess();
       onClose();
-    } catch (err) {
-      alert("Gagal menyimpan data pelanggan");
-    }
-    setLoading(false);
+      setLoading(false);
+    }, 2000); // Simulasi delay untuk penyimpanan data
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{isEdit ? "Edit Pelanggan" : "Tambah Pelanggan"}</DialogTitle>
+      <DialogTitle>{form.user_id ? "Edit Pelanggan" : "Tambah Pelanggan"}</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
           {loading ? (
