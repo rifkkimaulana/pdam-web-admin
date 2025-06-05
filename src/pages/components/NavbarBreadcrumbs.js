@@ -30,11 +30,13 @@ export default function NavbarBreadcrumbs() {
     komplain: "Keluhan & Komplain",
     penugasan: "Penugasan Petugas",
     list: "List Paket",
+    "paket-pengelola": "Paket Pengelolaan",
+    pengelola: "Pengelola",
   };
 
   // Ambil judul utama dan sub dari path
   const mainTitle = pathnames[0] ? pageTitles[pathnames[0]] || pathnames[0] : "Home";
-  const subTitle = pathnames[1] ? pageTitles[pathnames[1]] || pathnames[1] : "";
+  const subTitle = pathnames[1] ? pageTitles[pathnames[1]] || pathnames[1] : "List";
 
   return (
     <StyledBreadcrumbs aria-label="breadcrumb" separator={<NavigateNextRoundedIcon fontSize="small" />}>

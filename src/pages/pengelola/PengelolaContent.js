@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Menu, MenuItem, Box, TextField, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import {
+  Menu,
+  MenuItem,
+  Box,
+  TextField,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Divider,
+} from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Edit, Delete } from "@mui/icons-material";
 import ActionIconButton from "../components/ActionIconButton";
@@ -7,6 +19,7 @@ import { useTheme } from "@mui/material/styles";
 import { Add, Update, Verified, FilterList } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { getAllUsers } from "../../utils/user";
+import { Link as RouterLink } from "react-router-dom";
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -211,6 +224,16 @@ export default function UserManagement() {
           </Button>
 
           <Menu anchorEl={anchorElMenu} open={Boolean(anchorElMenu)} onClose={handleMenuClose}>
+            <MenuItem
+              component={RouterLink}
+              to="/paket-pengelola"
+              onClick={handleMenuClose}
+              style={{ display: "flex", alignItems: "center" }}
+            >
+              <FilterList style={{ fontSize: 20, marginRight: 8 }} />
+              Kelola Paket
+            </MenuItem>
+            <Divider />
             <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }}>
               <Add style={{ fontSize: 20, marginRight: 8 }} />
               Tambah Pengelola
