@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   TextField,
@@ -11,14 +11,15 @@ import {
   StepLabel,
   Box,
   Grid,
-  CircularProgress,
-  FormHelperText,
   Typography,
   Card,
   CardContent,
-  GridLegacy,
 } from "@mui/material";
 import Copyright from "../components/internals/components/Copyright";
+import { createUser } from "../../utils/user";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { getAllPaketLangganan } from "../../utils/paketLangganan";
 
 // Fungsi untuk membuat komponen form
 const MultiStepForm = () => {
@@ -31,7 +32,7 @@ const MultiStepForm = () => {
       re_password: "",
       email: "",
       telpon: "",
-      jenis_identitas: "",
+      jenis_identitas: "KTP", // Default jenis identitas
       nomor_identitas: "",
       file_identitas: null,
       alamat: "",
@@ -57,9 +58,19 @@ const MultiStepForm = () => {
   });
 
   const [loading, setLoading] = useState(false); // Status loading saat pengiriman
+  const [paketOptions, setPaketOptions] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({}); // Untuk error per field
+  const navigate = useNavigate();
 
   // Langkah-langkah formulir
   const steps = ["Detail Pengguna", "Data Pengelola & Paket"];
+
+  useEffect(() => {
+    // Ambil data paket langganan untuk pilihan paket
+    getAllPaketLangganan().then((data) => {
+      setPaketOptions(Array.isArray(data) ? data : []);
+    });
+  }, []);
 
   // Fungsi untuk memproses perubahan input
   const handleInputChange = (event, section) => {
@@ -71,11 +82,19 @@ const MultiStepForm = () => {
         [name]: files ? files[0] : value,
       },
     });
+    // Reset error field jika user mengedit password/re_password
+    if (section === "pengguna" && (name === "password" || name === "re_password")) {
+      setTimeout(validatePasswordField, 0);
+    }
   };
 
   // Fungsi untuk melanjutkan ke langkah berikutnya
   const handleNext = () => {
-    setActiveStep((prevStep) => prevStep + 1);
+    if (activeStep === steps.length - 1) {
+      handleSubmit();
+    } else {
+      setActiveStep((prevStep) => prevStep + 1);
+    }
   };
 
   // Fungsi untuk kembali ke langkah sebelumnya
@@ -83,14 +102,175 @@ const MultiStepForm = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  // Fungsi untuk mengirimkan formulir
-  const handleSubmit = () => {
+  // Fungsi untuk validasi re-password
+  const isPasswordMatch = () => {
+    return formData.pengguna.password === formData.pengguna.re_password;
+  };
+
+  // Fungsi untuk validasi field required sebelum submit
+  const validateRequiredFields = () => {
+    const pengguna = formData.pengguna;
+    const pengelola = formData.pengelola;
+    const langganan = formData.langganan;
+    const requiredPengguna = [
+      "nama_lengkap",
+      "username",
+      "password",
+      "re_password",
+      "email",
+      "telpon",
+      "jenis_identitas",
+      "nomor_identitas",
+      "alamat",
+      "jabatan",
+    ];
+    const requiredPengelola = ["nama_pengelola", "email", "telpon", "alamat"];
+    const requiredLangganan = ["paket_id"];
+    for (let key of requiredPengguna) {
+      if (!pengguna[key] || pengguna[key].toString().trim() === "") {
+        toast.error(`Field ${key.replace("_", " ")} wajib diisi!`);
+        return false;
+      }
+    }
+    for (let key of requiredPengelola) {
+      if (!pengelola[key] || pengelola[key].toString().trim() === "") {
+        toast.error(`Field ${key.replace("_", " ")} wajib diisi!`);
+        return false;
+      }
+    }
+    for (let key of requiredLangganan) {
+      if (!langganan[key]) {
+        toast.error(`Field ${key.replace("_", " ")} wajib diisi!`);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Fungsi untuk cek username exist ke backend
+  const checkUsernameExist = async (username) => {
+    if (!username) return;
+    try {
+      // Ganti endpoint sesuai API user yang tersedia
+      const res = await fetch(`/api/user?username=${encodeURIComponent(username)}`);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setFieldErrors((prev) => ({ ...prev, username: "Username sudah terdaftar" }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, username: undefined }));
+      }
+    } catch (e) {
+      // Abaikan error jaringan
+    }
+  };
+
+  // Fungsi validasi password dan re-password
+  const validatePasswordField = () => {
+    // Ambil nilai terbaru dari formData
+    const password = document.querySelector('input[name="password"]').value;
+    const re_password = document.querySelector('input[name="re_password"]').value;
+    if (password && re_password && password !== re_password) {
+      setFieldErrors((prev) => ({ ...prev, re_password: "Password tidak sama" }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, re_password: undefined }));
+    }
+  };
+
+  // Fungsi untuk mengirimkan formulir ke API
+  const handleSubmit = async () => {
+    if (!validateRequiredFields()) return;
+    if (!isPasswordMatch()) {
+      toast.error("Password dan Ulangi Password tidak sama!");
+      return;
+    }
     setLoading(true);
-    // Simulasi pengiriman data
-    setTimeout(() => {
-      alert("Formulir berhasil dikirim!");
+    try {
+      // Siapkan payload sesuai struktur yang diinginkan
+      let payload;
+      let isMultipart = false;
+      // Cek jika ada file yang diupload
+      if (formData.pengguna.file_identitas || formData.pengguna.pictures || formData.pengelola.logo) {
+        isMultipart = true;
+        payload = new FormData();
+        payload.append("nama_lengkap", formData.pengguna.nama_lengkap || "");
+        payload.append("username", formData.pengguna.username || "");
+        payload.append("password", formData.pengguna.password || "");
+        payload.append("re_password", formData.pengguna.re_password || "");
+        payload.append("email", formData.pengguna.email || "");
+        payload.append("telpon", formData.pengguna.telpon || "");
+        payload.append("jenis_identitas", formData.pengguna.jenis_identitas || "");
+        payload.append("nomor_identitas", formData.pengguna.nomor_identitas || "");
+        if (formData.pengguna.file_identitas) {
+          payload.append("file_identitas", formData.pengguna.file_identitas);
+        } else {
+          payload.append("file_identitas", "");
+        }
+        payload.append("alamat", formData.pengguna.alamat || "");
+        if (formData.pengguna.pictures) {
+          payload.append("pictures", formData.pengguna.pictures);
+        } else {
+          payload.append("pictures", "");
+        }
+        payload.append("jabatan", formData.pengguna.jabatan || "");
+        payload.append("nama_pengelola", formData.pengelola.nama_pengelola || "");
+        payload.append("email_pengelola", formData.pengelola.email || "");
+        payload.append("telpon_pengelola", formData.pengelola.telpon || "");
+        payload.append("alamat_pengelola", formData.pengelola.alamat || "");
+        if (formData.pengelola.logo) {
+          payload.append("logo_pengelola", formData.pengelola.logo);
+        } else {
+          payload.append("logo_pengelola", "");
+        }
+        payload.append("deskripsi_pengelola", formData.pengelola.deskripsi || "");
+        payload.append("paket_id", formData.langganan.paket_id || "");
+        payload.append("user_id", formData.langganan.user_id || "");
+        payload.append("mulai_langganan", formData.langganan.mulai_langganan || "");
+        payload.append("akhir_langganan", formData.langganan.akhir_langganan || "");
+        payload.append("status_langganan", formData.langganan.status || "");
+      } else {
+        payload = {
+          nama_lengkap: formData.pengguna.nama_lengkap || "",
+          username: formData.pengguna.username || "",
+          password: formData.pengguna.password || "",
+          re_password: formData.pengguna.re_password || "",
+          email: formData.pengguna.email || "",
+          telpon: formData.pengguna.telpon || "",
+          jenis_identitas: formData.pengguna.jenis_identitas || "",
+          nomor_identitas: formData.pengguna.nomor_identitas || "",
+          file_identitas: "",
+          alamat: formData.pengguna.alamat || "",
+          pictures: "",
+          jabatan: formData.pengguna.jabatan || "",
+          nama_pengelola: formData.pengelola.nama_pengelola || "",
+          email_pengelola: formData.pengelola.email || "",
+          telpon_pengelola: formData.pengelola.telpon || "",
+          alamat_pengelola: formData.pengelola.alamat || "",
+          logo_pengelola: "",
+          deskripsi_pengelola: formData.pengelola.deskripsi || "",
+          paket_id: formData.langganan.paket_id || "",
+          user_id: formData.langganan.user_id || "",
+          mulai_langganan: formData.langganan.mulai_langganan || "",
+          akhir_langganan: formData.langganan.akhir_langganan || "",
+          status_langganan: formData.langganan.status || "",
+        };
+      }
+      await createUser(payload, isMultipart);
+      toast.success("Berhasil menambahkan pengelola!");
+      navigate("/pengelola");
+    } catch (err) {
+      // Tampilkan error detail dari backend jika ada
+      if (err?.response?.status === 422 && err?.response?.data?.errors) {
+        const errors = err.response.data.errors;
+        setFieldErrors(errors); // Set error ke field
+        Object.keys(errors).forEach((key) => {
+          toast.error(errors[key][0]);
+        });
+      } else {
+        toast.error("Gagal mengirim data: " + (err?.response?.data?.message || err.message));
+      }
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   // Rendering setiap langkah formulir
@@ -105,7 +285,7 @@ const MultiStepForm = () => {
                   <TextField
                     label="Nama Lengkap"
                     name="nama_lengkap"
-                    value={formData.pengguna.nama_lengkap}
+                    value={formData.pengguna.nama_lengkap || ""}
                     onChange={(e) => handleInputChange(e, "pengguna")}
                     fullWidth
                     margin="normal"
@@ -125,10 +305,16 @@ const MultiStepForm = () => {
             <TextField
               label="Username"
               name="username"
-              value={formData.pengguna.username}
-              onChange={(e) => handleInputChange(e, "pengguna")}
+              value={formData.pengguna.username || ""}
+              onChange={(e) => {
+                handleInputChange(e, "pengguna");
+                setFieldErrors((prev) => ({ ...prev, username: undefined }));
+              }}
+              onBlur={() => checkUsernameExist(formData.pengguna.username)}
               fullWidth
               margin="normal"
+              error={!!fieldErrors.username}
+              helperText={fieldErrors.username}
             />
             <FormControl fullWidth margin="normal">
               <Grid container spacing={2} columns={12}>
@@ -137,10 +323,15 @@ const MultiStepForm = () => {
                     label="Password"
                     type="password"
                     name="password"
-                    value={formData.pengguna.re_password}
-                    onChange={(e) => handleInputChange(e, "pengguna")}
+                    value={formData.pengguna.password || ""}
+                    onChange={(e) => {
+                      handleInputChange(e, "pengguna");
+                      setTimeout(validatePasswordField, 0);
+                    }}
                     fullWidth
                     margin="normal"
+                    error={!!fieldErrors.password}
+                    helperText={fieldErrors.password}
                   />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
@@ -148,10 +339,15 @@ const MultiStepForm = () => {
                     label="Ulangi Password"
                     type="password"
                     name="re_password"
-                    value={formData.pengguna.re_password}
-                    onChange={(e) => handleInputChange(e, "pengguna")}
+                    value={formData.pengguna.re_password || ""}
+                    onChange={(e) => {
+                      handleInputChange(e, "pengguna");
+                      setTimeout(validatePasswordField, 0);
+                    }}
                     fullWidth
                     margin="normal"
+                    error={!!fieldErrors.re_password}
+                    helperText={fieldErrors.re_password}
                   />
                 </Grid>
               </Grid>
@@ -159,7 +355,7 @@ const MultiStepForm = () => {
             <TextField
               label="Email"
               name="email"
-              value={formData.pengguna.email}
+              value={formData.pengguna.email || ""}
               onChange={(e) => handleInputChange(e, "pengguna")}
               fullWidth
               margin="normal"
@@ -167,7 +363,7 @@ const MultiStepForm = () => {
             <TextField
               label="Nomor Telepon"
               name="telpon"
-              value={formData.pengguna.telpon}
+              value={formData.pengguna.telpon || ""}
               onChange={(e) => handleInputChange(e, "pengguna")}
               fullWidth
               margin="normal"
@@ -185,6 +381,7 @@ const MultiStepForm = () => {
                     <MenuItem value="KTP">KTP</MenuItem>
                     <MenuItem value="SIM">SIM</MenuItem>
                     <MenuItem value="PASPOR">PASPOR</MenuItem>
+                    <MenuItem value="ID Lainnya">ID Lainnya</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -201,7 +398,7 @@ const MultiStepForm = () => {
               <TextField
                 label="Nomor Identitas"
                 name="nomor_identitas"
-                value={formData.pengguna.nomor_identitas}
+                value={formData.pengguna.nomor_identitas || ""}
                 onChange={(e) => handleInputChange(e, "pengguna")}
                 fullWidth
                 margin="normal"
@@ -211,7 +408,7 @@ const MultiStepForm = () => {
               <TextField
                 label="Alamat"
                 name="alamat"
-                value={formData.pengguna.alamat}
+                value={formData.pengguna.alamat || ""}
                 onChange={(e) => handleInputChange(e, "pengguna")}
                 fullWidth
                 margin="normal"
@@ -225,7 +422,7 @@ const MultiStepForm = () => {
             <TextField
               label="Nama Pengelola"
               name="nama_pengelola"
-              value={formData.pengelola.nama_pengelola}
+              value={formData.pengelola.nama_pengelola || ""}
               onChange={(e) => handleInputChange(e, "pengelola")}
               fullWidth
               margin="normal"
@@ -233,7 +430,7 @@ const MultiStepForm = () => {
             <TextField
               label="Email Pengelola"
               name="email"
-              value={formData.pengelola.email}
+              value={formData.pengelola.email || ""}
               onChange={(e) => handleInputChange(e, "pengelola")}
               fullWidth
               margin="normal"
@@ -241,7 +438,7 @@ const MultiStepForm = () => {
             <TextField
               label="Nomor Telepon Pengelola"
               name="telpon"
-              value={formData.pengelola.telpon}
+              value={formData.pengelola.telpon || ""}
               onChange={(e) => handleInputChange(e, "pengelola")}
               fullWidth
               margin="normal"
@@ -249,7 +446,7 @@ const MultiStepForm = () => {
             <TextField
               label="Alamat Pengelola"
               name="alamat"
-              value={formData.pengelola.alamat}
+              value={formData.pengelola.alamat || ""}
               onChange={(e) => handleInputChange(e, "pengelola")}
               fullWidth
               margin="normal"
@@ -258,7 +455,7 @@ const MultiStepForm = () => {
             <TextField
               label="Deskripsi Pengelola"
               name="deskripsi"
-              value={formData.pengelola.deskripsi}
+              value={formData.pengelola.deskripsi || ""}
               onChange={(e) => handleInputChange(e, "pengelola")}
               fullWidth
               multiline
@@ -276,8 +473,11 @@ const MultiStepForm = () => {
                     value={formData.langganan.paket_id}
                     onChange={(e) => handleInputChange(e, "langganan")}
                   >
-                    <MenuItem value={1}>Paket Standart</MenuItem>
-                    <MenuItem value={2}>Paket Premium</MenuItem>
+                    {paketOptions.map((paket) => (
+                      <MenuItem key={paket.id} value={paket.id}>
+                        {paket.nama_paket}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>
