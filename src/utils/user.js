@@ -1,9 +1,18 @@
 import api from "./api";
 
-// GET: Ambil semua user
+// GET: Ambil semua user (khusus pengelola, mapping sesuai kebutuhan tabel)
 export const getAllUsers = async () => {
   const response = await api.get("/users");
-  return response.data;
+  // Mapping agar field sesuai dengan kebutuhan DataGrid PengelolaContent.js
+  return (response.data || []).map((item) => ({
+    id: item.user?.id,
+    user: item.user,
+    pengelola: item.pengelola,
+    paket: item.paket,
+    langganan: item.langganan,
+    // Untuk pencarian/filter
+    namaLengkap: item.user?.nama_lengkap || "",
+  }));
 };
 
 // GET: Ambil user by id

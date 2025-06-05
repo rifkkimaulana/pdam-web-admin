@@ -24,6 +24,8 @@ import FormTambahStaf from "../pages/staf/formTambahStaf";
 import FormUbahStaf from "../pages/staf/formUbahStaf";
 
 import Pengelola from "../pages/pengelola/PengelolaContent";
+import PaketPengelolaContent from "../pages/paket-pengelola/PaketContent";
+
 import { getToken } from "../utils/auth";
 import { toast } from "react-toastify";
 
@@ -131,6 +133,15 @@ function AppRouter() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="paket-pengelola"
+            element={
+              <PrivateRoute>
+                <PaketPengelolaContent />
+              </PrivateRoute>
+            }
+          />
+
           <Route
             path="pengelola/tambah"
             element={

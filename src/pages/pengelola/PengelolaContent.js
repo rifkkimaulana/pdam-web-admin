@@ -1,24 +1,12 @@
-import React, { useState } from "react";
-import {
-  Menu,
-  MenuItem,
-  IconButton,
-  Box,
-  TextField,
-  Typography,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-} from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Menu, MenuItem, Box, TextField, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Edit, Delete } from "@mui/icons-material";
 import ActionIconButton from "../components/ActionIconButton";
 import { useTheme } from "@mui/material/styles";
 import { Add, Update, Verified, FilterList } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { getAllUsers } from "../../utils/user";
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,14 +17,22 @@ export default function UserManagement() {
   const [selected, setSelected] = useState([]);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
+  const [filterStatus, setFilterStatus] = useState("");
   const theme = useTheme();
 
   const columns = [
-    { field: "namaLengkap", headerName: "Nama Lengkap", flex: 1, minWidth: 180 },
-    { field: "username", headerName: "Username", flex: 1, minWidth: 120 },
-    { field: "jabatan", headerName: "Jabatan", flex: 1, minWidth: 100 },
-    { field: "email", headerName: "Email", flex: 1, minWidth: 200 },
-    { field: "telpon", headerName: "Telpon", flex: 1, minWidth: 150 },
+    { field: "user.nama_lengkap", headerName: "Nama Pengelola", flex: 1, minWidth: 180 },
+    { field: "user.email", headerName: "Email Pengelola", flex: 1, minWidth: 200 },
+    { field: "user.telpon", headerName: "Nomor Telpon", flex: 1, minWidth: 150 },
+    { field: "user.alamat", headerName: "Alamat Pengelola", flex: 1, minWidth: 200 },
+    { field: "pengelola.nama_pengelola", headerName: "Nama PDAM", flex: 1, minWidth: 180 },
+    { field: "pengelola.email", headerName: "Email PDAM", flex: 1, minWidth: 200 },
+    { field: "pengelola.telpon", headerName: "Nomor Telpon PDAM", flex: 1, minWidth: 150 },
+    { field: "langganan.status", headerName: "Status Langganan", flex: 1, minWidth: 150 },
+    { field: "langganan.mulai_langganan", headerName: "Tanggal Mulai", flex: 1, minWidth: 130 },
+    { field: "langganan.akhir_langganan", headerName: "Tanggal Akhir", flex: 1, minWidth: 130 },
+    { field: "paket.nama_paket - paket.masa_aktif paket.satuan", headerName: "Paket Langganan", flex: 1, minWidth: 150 },
+    { field: "paket.harga_paket", headerName: "Harga Paket", flex: 1, minWidth: 120 },
     {
       field: "action",
       headerName: "Aksi",
@@ -82,8 +78,28 @@ export default function UserManagement() {
     },
   ];
 
-  const filteredRows = rows.filter((row) => row.namaLengkap?.toLowerCase().includes(searchTerm.toLowerCase()));
-  const dataGridRows = filteredRows.map((row, idx) => ({ ...row, id: row.id ?? idx + 1 }));
+  const filteredRows = rows.filter((row) => {
+    const matchNama = row.user?.nama_lengkap?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchStatus = filterStatus ? row.langganan?.status === filterStatus : true;
+    return matchNama && matchStatus;
+  });
+  const dataGridRows = filteredRows.map((row, idx) => ({
+    id: row.id ?? idx + 1,
+    "user.nama_lengkap": row.user?.nama_lengkap || "-",
+    "user.email": row.user?.email || "-",
+    "user.telpon": row.user?.telpon || "-",
+    "user.alamat": row.user?.alamat || "-",
+    "pengelola.nama_pengelola": row.pengelola?.nama_pengelola || "-",
+    "pengelola.email": row.pengelola?.email || "-",
+    "pengelola.telpon": row.pengelola?.telpon || "-",
+    "langganan.status": row.langganan?.status || "-",
+    "langganan.mulai_langganan": row.langganan?.mulai_langganan || "-",
+    "langganan.akhir_langganan": row.langganan?.akhir_langganan || "-",
+    "paket.nama_paket - paket.masa_aktif paket.satuan": row.paket
+      ? `${row.paket.nama_paket} - ${row.paket.masa_aktif} ${row.paket.satuan}`
+      : "-",
+    "paket.harga_paket": row.paket?.harga_paket || "-",
+  }));
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -102,34 +118,49 @@ export default function UserManagement() {
     alert("Hapus Pengguna yang di-select");
   };
 
-  const [anchorElMenu, setAnchorElMenu] = useState(null); // Untuk dropdown menu
-  const [anchorElFilter, setAnchorElFilter] = useState(null); // Untuk dropdown filter
+  const [anchorElMenu, setAnchorElMenu] = useState(null);
+  const [anchorElFilter, setAnchorElFilter] = useState(null);
 
   const handleMenuClick = (event) => {
-    setAnchorElMenu(event.currentTarget); // Menampilkan menu
+    setAnchorElMenu(event.currentTarget);
   };
 
   const handleMenuClose = () => {
-    setAnchorElMenu(null); // Menutup menu
+    setAnchorElMenu(null);
   };
 
   const handleFilterClick = (event) => {
-    setAnchorElFilter(event.currentTarget); // Menampilkan filter dropdown
+    setAnchorElFilter(event.currentTarget);
   };
 
   const handleFilterClose = () => {
-    setAnchorElFilter(null); // Menutup filter dropdown
+    setAnchorElFilter(null);
   };
+
+  const handleFilterStatus = (status) => {
+    setFilterStatus(status);
+    setAnchorElFilter(null);
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    getAllUsers()
+      .then((data) => {
+        setRows(data || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   return (
     <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", mt: 3 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
-          Manajemen Pengguna
+          Manajemen Pengelola
         </Typography>
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <TextField
-            label="Cari Jabatan"
+            label="Cari Nama Pengelola"
             variant="outlined"
             size="small"
             sx={{ width: "250px", height: "40px" }}
@@ -150,16 +181,16 @@ export default function UserManagement() {
               display: "flex",
               alignItems: "center",
             }}
-            endIcon={<ArrowDropDownIcon />} // Menambahkan ikon dropdown
+            endIcon={<ArrowDropDownIcon />}
             onClick={handleFilterClick}
           >
             Filter
           </Button>
 
-          {/* Dropdown Filter */}
           <Menu anchorEl={anchorElFilter} open={Boolean(anchorElFilter)} onClose={handleFilterClose}>
-            <MenuItem onClick={handleFilterClose}>Pengelola Aktif</MenuItem>
-            <MenuItem onClick={handleFilterClose}>Pengelola Tidak Aktif</MenuItem>
+            <MenuItem onClick={() => handleFilterStatus("Aktif")}>Pengelola Aktif</MenuItem>
+            <MenuItem onClick={() => handleFilterStatus("Tidak Aktif")}>Pengelola Tidak Aktif</MenuItem>
+            <MenuItem onClick={() => handleFilterStatus("")}>Semua</MenuItem>
           </Menu>
 
           <Button
@@ -173,7 +204,7 @@ export default function UserManagement() {
               display: "flex",
               alignItems: "center",
             }}
-            endIcon={<ArrowDropDownIcon />} // Menambahkan ikon dropdown
+            endIcon={<ArrowDropDownIcon />}
             onClick={handleMenuClick}
           >
             Menu

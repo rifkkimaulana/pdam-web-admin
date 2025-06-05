@@ -29,10 +29,10 @@ const mainListItems = [
   { text: "Komplain", icon: <ReportProblemRoundedIcon />, link: "/komplain" },
   { text: "Penugasan", icon: <AssignmentTurnedInRoundedIcon />, link: "/penugasan" },
 ];
-
 const secondaryListItems = [
   { text: "Pengaturan", icon: <SettingsApplicationsRoundedIcon />, link: "/pengaturan" },
   { text: "Kewajiban", icon: <FactCheckRoundedIcon />, link: "/kewajiban" },
+  { text: "Paket Pengelola", icon: <InventoryRoundedIcon />, link: "/paket-pengelola" },
   { text: "pengelola", icon: <GroupsRoundedIcon />, link: "/pengelola" },
 ];
 
