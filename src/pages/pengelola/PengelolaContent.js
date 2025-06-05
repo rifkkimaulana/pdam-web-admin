@@ -56,38 +56,43 @@ export default function UserManagement() {
       disableColumnMenu: true,
       align: "center",
       headerAlign: "center",
-      renderCell: () => (
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 1, height: "100%" }}>
-          <ActionIconButton
-            color={theme.palette.primary.main}
-            title="Edit"
-            sx={{
-              width: "30px",
-              height: "30px",
-              minWidth: "auto",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Edit fontSize="small" />
-          </ActionIconButton>
-          <ActionIconButton
-            color={theme.palette.error.main}
-            title="Hapus"
-            sx={{
-              width: "30px",
-              height: "30px",
-              minWidth: "auto",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Delete fontSize="small" />
-          </ActionIconButton>
-        </Box>
-      ),
+      renderCell: (params) => {
+        const isAdmin = params.row.user?.jabatan === "Administrator";
+        return (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 1, height: "100%" }}>
+            <ActionIconButton
+              color={theme.palette.primary.main}
+              title="Edit"
+              disabled={isAdmin}
+              sx={{
+                width: "30px",
+                height: "30px",
+                minWidth: "auto",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Edit fontSize="small" />
+            </ActionIconButton>
+            <ActionIconButton
+              color={theme.palette.error.main}
+              title="Hapus"
+              disabled={isAdmin}
+              sx={{
+                width: "30px",
+                height: "30px",
+                minWidth: "auto",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Delete fontSize="small" />
+            </ActionIconButton>
+          </Box>
+        );
+      },
     },
   ];
 
@@ -234,7 +239,7 @@ export default function UserManagement() {
               Kelola Paket
             </MenuItem>
             <Divider />
-            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }}>
+            <MenuItem component={RouterLink} to="/pengelola/tambah" style={{ display: "flex", alignItems: "center" }}>
               <Add style={{ fontSize: 20, marginRight: 8 }} />
               Tambah Pengelola
             </MenuItem>
@@ -246,7 +251,7 @@ export default function UserManagement() {
               <Verified style={{ fontSize: 20, marginRight: 8 }} />
               Verifikasi Pembayaran
             </MenuItem>
-            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }}>
+            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }} disabled>
               <Delete style={{ fontSize: 20, marginRight: 8 }} />
               Hapus Pilihan
             </MenuItem>

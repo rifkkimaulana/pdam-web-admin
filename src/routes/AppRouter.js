@@ -24,6 +24,7 @@ import FormTambahStaf from "../pages/staf/formTambahStaf";
 import FormUbahStaf from "../pages/staf/formUbahStaf";
 
 import Pengelola from "../pages/pengelola/PengelolaContent";
+import TambahPengelola from "../pages/pengelola/TambahPengelola";
 import PaketPengelolaContent from "../pages/paket-pengelola/PaketContent";
 
 import { getToken } from "../utils/auth";
@@ -130,6 +131,14 @@ function AppRouter() {
             element={
               <PrivateRoute>
                 <Pengelola />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengelola/tambah"
+            element={
+              <PrivateRoute>
+                <TambahPengelola />
               </PrivateRoute>
             }
           />
