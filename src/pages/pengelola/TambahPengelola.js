@@ -16,6 +16,7 @@ import {
   Typography,
   Card,
   CardContent,
+  GridLegacy,
 } from "@mui/material";
 import Copyright from "../components/internals/components/Copyright";
 
@@ -27,6 +28,7 @@ const MultiStepForm = () => {
       nama_lengkap: "",
       username: "",
       password: "",
+      re_password: "",
       email: "",
       telpon: "",
       jenis_identitas: "",
@@ -57,7 +59,7 @@ const MultiStepForm = () => {
   const [loading, setLoading] = useState(false); // Status loading saat pengiriman
 
   // Langkah-langkah formulir
-  const steps = ["Detail Pengguna", "Data Pengelola & Paket", "Langganan Pengguna"];
+  const steps = ["Detail Pengguna", "Data Pengelola & Paket"];
 
   // Fungsi untuk memproses perubahan input
   const handleInputChange = (event, section) => {
@@ -97,14 +99,29 @@ const MultiStepForm = () => {
       case 0:
         return (
           <>
-            <TextField
-              label="Nama Lengkap"
-              name="nama_lengkap"
-              value={formData.pengguna.nama_lengkap}
-              onChange={(e) => handleInputChange(e, "pengguna")}
-              fullWidth
-              margin="normal"
-            />
+            <FormControl fullWidth margin="normal">
+              <Grid container spacing={2} columns={12}>
+                <Grid size={{ xs: 8, sm: 8, lg: 8 }}>
+                  <TextField
+                    label="Nama Lengkap"
+                    name="nama_lengkap"
+                    value={formData.pengguna.nama_lengkap}
+                    onChange={(e) => handleInputChange(e, "pengguna")}
+                    fullWidth
+                    margin="normal"
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid size={{ xs: 4, sm: 4, lg: 4 }}>
+                  <FormControl fullWidth margin="normal">
+                    <Button variant="contained" component="label" margin="normal">
+                      Upload Foto Profil
+                      <input type="file" hidden onChange={(e) => handleInputChange(e, "pengguna")} name="pictures" />
+                    </Button>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </FormControl>
             <TextField
               label="Username"
               name="username"
@@ -113,15 +130,32 @@ const MultiStepForm = () => {
               fullWidth
               margin="normal"
             />
-            <TextField
-              label="Password"
-              type="password"
-              name="password"
-              value={formData.pengguna.password}
-              onChange={(e) => handleInputChange(e, "pengguna")}
-              fullWidth
-              margin="normal"
-            />
+            <FormControl fullWidth margin="normal">
+              <Grid container spacing={2} columns={12}>
+                <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+                  <TextField
+                    label="Password"
+                    type="password"
+                    name="password"
+                    value={formData.pengguna.re_password}
+                    onChange={(e) => handleInputChange(e, "pengguna")}
+                    fullWidth
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+                  <TextField
+                    label="Ulangi Password"
+                    type="password"
+                    name="re_password"
+                    value={formData.pengguna.re_password}
+                    onChange={(e) => handleInputChange(e, "pengguna")}
+                    fullWidth
+                    margin="normal"
+                  />
+                </Grid>
+              </Grid>
+            </FormControl>
             <TextField
               label="Email"
               name="email"
@@ -138,43 +172,51 @@ const MultiStepForm = () => {
               fullWidth
               margin="normal"
             />
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Jenis Identitas</InputLabel>
-              <Select
-                label="Jenis Identitas"
-                name="jenis_identitas"
-                value={formData.pengguna.jenis_identitas}
+            <Grid container spacing={2} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
+              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Jenis Identitas</InputLabel>
+                  <Select
+                    label="Jenis Identitas"
+                    name="jenis_identitas"
+                    value={formData.pengguna.jenis_identitas}
+                    onChange={(e) => handleInputChange(e, "pengguna")}
+                  >
+                    <MenuItem value="KTP">KTP</MenuItem>
+                    <MenuItem value="SIM">SIM</MenuItem>
+                    <MenuItem value="PASPOR">PASPOR</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+                <FormControl fullWidth margin="normal">
+                  <Button variant="contained" component="label" margin="normal">
+                    Upload Foto Identitas
+                    <input type="file" hidden onChange={(e) => handleInputChange(e, "pengguna")} name="file_identitas" />
+                  </Button>
+                </FormControl>
+              </Grid>
+            </Grid>
+            <FormControl fullWidth>
+              <TextField
+                label="Nomor Identitas"
+                name="nomor_identitas"
+                value={formData.pengguna.nomor_identitas}
                 onChange={(e) => handleInputChange(e, "pengguna")}
-              >
-                <MenuItem value="KTP">KTP</MenuItem>
-                <MenuItem value="SIM">SIM</MenuItem>
-                <MenuItem value="PASPOR">PASPOR</MenuItem>
-              </Select>
+                fullWidth
+                margin="normal"
+              />
             </FormControl>
-            <TextField
-              label="Nomor Identitas"
-              name="nomor_identitas"
-              value={formData.pengguna.nomor_identitas}
-              onChange={(e) => handleInputChange(e, "pengguna")}
-              fullWidth
-              margin="normal"
-            />
-            <Button variant="contained" component="label" margin="normal">
-              Upload Foto Identitas
-              <input type="file" hidden onChange={(e) => handleInputChange(e, "pengguna")} name="file_identitas" />
-            </Button>
-            <TextField
-              label="Alamat"
-              name="alamat"
-              value={formData.pengguna.alamat}
-              onChange={(e) => handleInputChange(e, "pengguna")}
-              fullWidth
-              margin="normal"
-            />
-            <Button variant="contained" component="label" margin="normal">
-              Upload Foto Profil
-              <input type="file" hidden onChange={(e) => handleInputChange(e, "pengguna")} name="pictures" />
-            </Button>
+            <FormControl fullWidth>
+              <TextField
+                label="Alamat"
+                name="alamat"
+                value={formData.pengguna.alamat}
+                onChange={(e) => handleInputChange(e, "pengguna")}
+                fullWidth
+                margin="normal"
+              />
+            </FormControl>{" "}
           </>
         );
       case 1:
@@ -212,10 +254,7 @@ const MultiStepForm = () => {
               fullWidth
               margin="normal"
             />
-            <Button variant="contained" component="label" margin="normal">
-              Upload Logo Pengelola
-              <input type="file" hidden onChange={(e) => handleInputChange(e, "pengelola")} name="logo" />
-            </Button>
+
             <TextField
               label="Deskripsi Pengelola"
               name="deskripsi"
@@ -226,28 +265,34 @@ const MultiStepForm = () => {
               rows={4}
               margin="normal"
             />
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Paket Langganan</InputLabel>
-              <Select
-                label="Pilih Paket Langganan"
-                name="paket_id"
-                value={formData.langganan.paket_id}
-                onChange={(e) => handleInputChange(e, "langganan")}
-              >
-                <MenuItem value={1}>Paket Standart</MenuItem>
-                <MenuItem value={2}>Paket Premium</MenuItem>
-              </Select>
-            </FormControl>
+            <Grid container spacing={2} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
+              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+                {" "}
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Paket Langganan</InputLabel>
+                  <Select
+                    label="Pilih Paket Langganan"
+                    name="paket_id"
+                    value={formData.langganan.paket_id}
+                    onChange={(e) => handleInputChange(e, "langganan")}
+                  >
+                    <MenuItem value={1}>Paket Standart</MenuItem>
+                    <MenuItem value={2}>Paket Premium</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+                <FormControl fullWidth margin="normal">
+                  <Button variant="contained" component="label" margin="normal">
+                    Upload Logo Pengelola
+                    <input type="file" hidden onChange={(e) => handleInputChange(e, "pengelola")} name="logo" />
+                  </Button>
+                </FormControl>
+              </Grid>
+            </Grid>
           </>
         );
-      case 2:
-        return (
-          <>
-            <Button variant="contained" color="primary" onClick={handleSubmit} fullWidth>
-              {loading ? <CircularProgress size={24} /> : "Submit"}
-            </Button>
-          </>
-        );
+
       default:
         return "Unknown Step";
     }
@@ -263,11 +308,16 @@ const MultiStepForm = () => {
           </Typography>
         </Grid>
         <Grid size={{ xs: 6, sm: 6, lg: 6 }} alignContent={"flex-end"} textAlign="right">
-          <Button variant="contained" onClick={() => window.history.back()} sx={{ mr: 1 }}>
-            Kembali
+          <Button color="error" variant="contained" onClick={() => window.history.back()} sx={{ mr: 1 }}>
+            Batal
           </Button>
-          <Button type="submit" variant="contained" color="success" form="form-tambah-staf">
-            Simpan
+          {activeStep > 0 && (
+            <Button onClick={handleBack} sx={{ mr: 1 }}>
+              Kembali
+            </Button>
+          )}
+          <Button onClick={handleNext} variant="contained" color="success">
+            {activeStep === steps.length - 1 ? "Kirim" : "Lanjut"}
           </Button>
         </Grid>
       </Grid>
@@ -301,19 +351,6 @@ const MultiStepForm = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 12, lg: 12 }}>
-          {" "}
-          <Card>
-            <CardContent>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                {activeStep > 0 && <Button onClick={handleBack}>Kembali</Button>}
-                <Button onClick={handleNext} variant="contained">
-                  {activeStep === steps.length - 1 ? "Kirim" : "Lanjut"}
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>{" "}
         </Grid>
       </Grid>
       <Copyright sx={{ my: 4 }} />
