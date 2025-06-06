@@ -20,6 +20,7 @@ import { Add, Update, Verified, FilterList } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { getAllUsers } from "../../utils/user";
 import { Link, useNavigate } from "react-router-dom";
+import Checkbox from "@mui/material/Checkbox";
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,16 +28,67 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [selected, setSelected] = useState([]);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const [filterStatus, setFilterStatus] = useState("");
+  const [checkedUserIds, setCheckedUserIds] = useState([]);
   const theme = useTheme();
   const navigate = useNavigate();
 
-  const [selectedUserIds, setSelectedUserIds] = useState([]); // State untuk menyimpan ID pengguna yang dipilih
-
   const columns = [
+    // Kolom checkbox manual
+    {
+      field: "select",
+      headerName: "Pilih",
+      width: 70,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      align: "center",
+      headerAlign: "center",
+      renderHeader: () => {
+        // Checkbox di header untuk seleksi massal
+        const allUserIds = dataGridRows.map((row) => row["user.id"]).filter((id) => id !== "-" && id !== undefined && id !== null);
+        const allChecked = allUserIds.length > 0 && allUserIds.every((id) => checkedUserIds.includes(id));
+        const someChecked = allUserIds.some((id) => checkedUserIds.includes(id));
+        const handleHeaderChange = (e) => {
+          let newChecked;
+          if (e.target.checked) {
+            newChecked = [...new Set([...checkedUserIds, ...allUserIds])];
+          } else {
+            newChecked = checkedUserIds.filter((id) => !allUserIds.includes(id));
+          }
+          setCheckedUserIds(newChecked);
+          // Log array user id terpilih ke console setiap perubahan
+          console.log("User ID terpilih:", newChecked);
+        };
+        return (
+          <Checkbox
+            checked={allChecked}
+            indeterminate={!allChecked && someChecked}
+            onChange={handleHeaderChange}
+            sx={{ p: 0 }}
+            color="primary"
+          />
+        );
+      },
+      renderCell: (params) => {
+        const userId = params.row["user.id"];
+        const checked = checkedUserIds.includes(userId);
+        const handleChange = (e) => {
+          let newChecked;
+          if (e.target.checked) {
+            newChecked = [...checkedUserIds, userId];
+          } else {
+            newChecked = checkedUserIds.filter((id) => id !== userId);
+          }
+          setCheckedUserIds(newChecked);
+          // Log array user id terpilih ke console setiap perubahan
+          console.log("User ID terpilih:", newChecked);
+        };
+        return <Checkbox checked={checked} onChange={handleChange} sx={{ p: 0 }} color="primary" />;
+      },
+    },
     { field: "user.nama_lengkap", headerName: "Nama Pengelola", flex: 1, minWidth: 180 },
     { field: "user.email", headerName: "Email Pengelola", flex: 1, minWidth: 200 },
     { field: "user.telpon", headerName: "Nomor Telpon", flex: 1, minWidth: 150 },
@@ -224,13 +276,6 @@ export default function UserManagement() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Menangani pemilihan checkbox dengan selectionModel
-  const handleSelectionUserIds = (ids) => {
-    setSelectedUserIds(ids); // Memperbarui state dengan ID yang dipilih
-    // Log user ID yang dipilih
-    console.log("User ID yang dipilih:", ids);
-  };
-
   return (
     <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", mt: 3 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
@@ -245,21 +290,6 @@ export default function UserManagement() {
             sx={{ width: "250px", height: "40px" }}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button
-            variant="outlined"
-            color="primary"
-            sx={{ height: "40px", boxShadow: "none", px: 3 }}
-            endIcon={<ArrowDropDownIcon />}
-            onClick={handleFilterClick}
-          >
-            Filter
-          </Button>
-          <Menu anchorEl={anchorElFilter} open={Boolean(anchorElFilter)} onClose={handleFilterClose}>
-            <MenuItem onClick={() => handleFilterStatus("Aktif")}>Pengelola Aktif</MenuItem>
-            <MenuItem onClick={() => handleFilterStatus("Tidak Aktif")}>Pengelola Tidak Aktif</MenuItem>
-            <MenuItem onClick={() => handleFilterStatus("")}>Semua</MenuItem>
-          </Menu>
-
           <Button
             variant="contained"
             color="success"
@@ -279,6 +309,11 @@ export default function UserManagement() {
               <Add style={{ fontSize: 20, marginRight: 8 }} />
               Tambah Pengelola
             </MenuItem>
+            {/* Tambahkan menu filter status langganan */}
+            <MenuItem onClick={handleFilterClick}>
+              <FilterList style={{ fontSize: 20, marginRight: 8 }} />
+              Filter Status Langganan
+            </MenuItem>
             <MenuItem onClick={handleMenuClose}>
               <Update style={{ fontSize: 20, marginRight: 8 }} />
               Perbaharui Langganan
@@ -288,11 +323,22 @@ export default function UserManagement() {
               Verifikasi Pembayaran
             </MenuItem>
           </Menu>
+          {/* Menu filter status langganan */}
+          <Menu anchorEl={anchorElFilter} open={Boolean(anchorElFilter)} onClose={handleFilterClose}>
+            <MenuItem selected={filterStatus === ""} onClick={() => handleFilterStatus("")}>
+              Semua Status
+            </MenuItem>
+            <MenuItem selected={filterStatus === "Aktif"} onClick={() => handleFilterStatus("Aktif")}>
+              Aktif
+            </MenuItem>
+            <MenuItem selected={filterStatus === "Tidak Aktif"} onClick={() => handleFilterStatus("Tidak Aktif")}>
+              Tidak Aktif
+            </MenuItem>
+          </Menu>
         </Box>
       </Box>
 
       <DataGrid
-        checkboxSelection
         rows={dataGridRows}
         columns={columns}
         pageSize={rowsPerPage}
@@ -301,8 +347,6 @@ export default function UserManagement() {
         onPageSizeChange={handleChangeRowsPerPage}
         pagination
         loading={loading}
-        selectionModel={selectedUserIds} // Menambahkan selectionModel untuk mengelola pemilihan secara manual
-        onSelectionModelChange={(newSelectionModel) => handleSelectionUserIds(newSelectionModel)}
       />
 
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
