@@ -26,6 +26,7 @@ import Pengelola from "../pages/pengelola/PengelolaContent";
 import TambahPengelola from "../pages/pengelola/TambahPengelola";
 import UbahPengelola from "../pages/pengelola/EditPengelola";
 import PaketPengelolaContent from "../pages/paket-pengelola/PaketContent";
+import PembayaranLanggananContent from "../pages/pembayaran-langganan/PembayaranLanggananContent";
 
 import { getToken } from "../utils/auth";
 import { toast } from "react-toastify";
@@ -196,6 +197,14 @@ function AppRouter() {
             element={
               <PrivateRoute>
                 <FormUbahStaf />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pembayaran-langganan"
+            element={
+              <PrivateRoute>
+                <PembayaranLanggananContent />
               </PrivateRoute>
             }
           />

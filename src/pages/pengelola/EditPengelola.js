@@ -302,28 +302,42 @@ const MultiStepForm = () => {
     let title = "";
     if (type === "profil") {
       title = "Foto Profil";
-      if (formData.pengguna.pictures instanceof File) {
+      if (formData.pengguna.pictures && typeof formData.pengguna.pictures === "object" && "name" in formData.pengguna.pictures) {
         src = URL.createObjectURL(formData.pengguna.pictures);
+      } else if (formData.pengguna.pictures && typeof formData.pengguna.pictures === "string") {
+        src = formData.pengguna.pictures.startsWith("http")
+          ? formData.pengguna.pictures
+          : `http://localhost:8000/${formData.pengguna.pictures.replace(/^\/+/, "")}`;
       } else if (formData.user && formData.user.pictures) {
-        src = formData.user.pictures;
-      } else if (formData.pengguna.pictures) {
-        src = formData.pengguna.pictures;
+        src = formData.user.pictures.startsWith("http")
+          ? formData.user.pictures
+          : `http://localhost:8000/${formData.user.pictures.replace(/^\/+/, "")}`;
       }
     } else if (type === "identitas") {
       title = "Foto Identitas";
-      if (formData.pengguna.file_identitas instanceof File) {
+      if (
+        formData.pengguna.file_identitas &&
+        typeof formData.pengguna.file_identitas === "object" &&
+        "name" in formData.pengguna.file_identitas
+      ) {
         src = URL.createObjectURL(formData.pengguna.file_identitas);
+      } else if (formData.pengguna.file_identitas && typeof formData.pengguna.file_identitas === "string") {
+        src = formData.pengguna.file_identitas.startsWith("http")
+          ? formData.pengguna.file_identitas
+          : `http://localhost:8000/${formData.pengguna.file_identitas.replace(/^\/+/, "")}`;
       } else if (formData.user && formData.user.file_identitas) {
-        src = formData.user.file_identitas;
-      } else if (formData.pengguna.file_identitas) {
-        src = formData.pengguna.file_identitas;
+        src = formData.user.file_identitas.startsWith("http")
+          ? formData.user.file_identitas
+          : `http://localhost:8000/${formData.user.file_identitas.replace(/^\/+/, "")}`;
       }
     } else if (type === "logo") {
       title = "Logo Pengelola";
-      if (formData.pengelola.logo instanceof File) {
+      if (formData.pengelola.logo && typeof formData.pengelola.logo === "object" && "name" in formData.pengelola.logo) {
         src = URL.createObjectURL(formData.pengelola.logo);
-      } else if (formData.pengelola.logo) {
-        src = formData.pengelola.logo;
+      } else if (formData.pengelola.logo && typeof formData.pengelola.logo === "string") {
+        src = formData.pengelola.logo.startsWith("http")
+          ? formData.pengelola.logo
+          : `http://localhost:8000/${formData.pengelola.logo.replace(/^\/+/, "")}`;
       }
     }
     setFotoDialogSrc(src);

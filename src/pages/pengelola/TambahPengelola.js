@@ -331,11 +331,15 @@ const MultiStepForm = () => {
                 </Grid>
                 <Grid size={2}>
                   <FormControl fullWidth margin="normal">
-                    {formData.pengguna.pictures instanceof File && (
-                      <Button onClick={() => handleShowFoto("profil")}>
-                        <VisibilityIcon />
-                      </Button>
-                    )}
+                    {formData.pengguna.pictures &&
+                      typeof formData.pengguna.pictures === "object" &&
+                      formData.pengguna.pictures !== null &&
+                      "name" in formData.pengguna.pictures &&
+                      "size" in formData.pengguna.pictures && (
+                        <Button onClick={() => handleShowFoto("profil")}>
+                          <VisibilityIcon />
+                        </Button>
+                      )}
                   </FormControl>
                 </Grid>
               </Grid>
@@ -433,11 +437,15 @@ const MultiStepForm = () => {
               </Grid>
               <Grid size={3}>
                 <FormControl fullWidth margin="normal">
-                  {formData.pengguna.file_identitas instanceof File && (
-                    <Button onClick={() => handleShowFoto("identitas")}>
-                      <VisibilityIcon />
-                    </Button>
-                  )}
+                  {formData.pengguna.file_identitas &&
+                    typeof formData.pengguna.file_identitas === "object" &&
+                    formData.pengguna.file_identitas !== null &&
+                    "name" in formData.pengguna.file_identitas &&
+                    "size" in formData.pengguna.file_identitas && (
+                      <Button onClick={() => handleShowFoto("identitas")}>
+                        <VisibilityIcon />
+                      </Button>
+                    )}
                 </FormControl>
               </Grid>
             </Grid>
@@ -509,7 +517,6 @@ const MultiStepForm = () => {
             />
             <Grid container spacing={2} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
               <Grid size={6}>
-                {" "}
                 <FormControl fullWidth margin="normal">
                   <InputLabel>Paket Langganan</InputLabel>
                   <Select
@@ -536,11 +543,15 @@ const MultiStepForm = () => {
               </Grid>
               <Grid size={2}>
                 <FormControl fullWidth margin="normal">
-                  {formData.pengelola.logo instanceof File && (
-                    <Button onClick={() => handleShowFoto("logo")}>
-                      <VisibilityIcon />
-                    </Button>
-                  )}
+                  {formData.pengelola.logo &&
+                    typeof formData.pengelola.logo === "object" &&
+                    formData.pengelola.logo !== null &&
+                    "name" in formData.pengelola.logo &&
+                    "size" in formData.pengelola.logo && (
+                      <Button onClick={() => handleShowFoto("logo")}>
+                        <VisibilityIcon />
+                      </Button>
+                    )}
                 </FormControl>
               </Grid>
             </Grid>

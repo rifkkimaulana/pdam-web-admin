@@ -34,6 +34,7 @@ const secondaryListItems = [
   { text: "Kewajiban", icon: <FactCheckRoundedIcon />, link: "/kewajiban" },
   { text: "Paket Pengelola", icon: <InventoryRoundedIcon />, link: "/paket-pengelola" },
   { text: "Pengelola", icon: <GroupsRoundedIcon />, link: "/pengelola" },
+  { text: "Pembayaran", icon: <ReceiptRoundedIcon />, link: "/pembayaran-langganan" },
 ];
 
 export default function MenuContent() {
