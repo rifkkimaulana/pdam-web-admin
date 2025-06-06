@@ -28,6 +28,8 @@ import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import LastPageIcon from "@mui/icons-material/LastPage";
 import { toast } from "react-toastify";
+import SearchTableContent from "../components/content-components/SearchTableContent";
+import CustomPaginationTable from "../components/content-components/CustomPaginationTable";
 
 export default function UserManagement() {
   const [jabatan, setJabatan] = useState("Pengelola");
@@ -362,16 +364,14 @@ export default function UserManagement() {
                       </MenuItem>
                     ))}
                   </TextField>
-                  <TextField
+                  <SearchTableContent
                     label="Cari Nama Pengelola"
-                    variant="outlined"
-                    size="small"
-                    sx={{ width: "250px", height: "40px", "& .MuiInputBase-root": { height: "40px" } }}
                     value={searchTerm}
                     onChange={(e) => {
                       setSearchTerm(e.target.value);
                       setPage(0);
                     }}
+                    sx={{ width: 250, height: 40, "& .MuiInputBase-root": { height: 40 } }}
                   />
                   <Button
                     variant="contained"
@@ -465,29 +465,7 @@ export default function UserManagement() {
                 </Box>
               </Grid>
 
-              <Box sx={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", mb: 1 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                  {`Halaman ${page + 1} dari ${Math.ceil(totalRows / pageSize)}`}
-                </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Button onClick={() => setPage(0)} disabled={page === 0} size="small">
-                    <FirstPageIcon fontSize="small" />
-                  </Button>
-                  <Button onClick={() => setPage(page - 1)} disabled={page === 0} size="small">
-                    <NavigateBeforeIcon fontSize="small" />
-                  </Button>
-                  <Button onClick={() => setPage(page + 1)} disabled={page >= Math.ceil(totalRows / pageSize) - 1} size="small">
-                    <NavigateNextIcon fontSize="small" />
-                  </Button>
-                  <Button
-                    onClick={() => setPage(Math.max(0, Math.ceil(totalRows / pageSize) - 1))}
-                    disabled={page >= Math.ceil(totalRows / pageSize) - 1}
-                    size="small"
-                  >
-                    <LastPageIcon fontSize="small" />
-                  </Button>
-                </Box>
-              </Box>
+              <CustomPaginationTable page={page} pageSize={pageSize} totalRows={totalRows} onPageChange={setPage} />
             </Grid>
           </Box>
         </Grid>
