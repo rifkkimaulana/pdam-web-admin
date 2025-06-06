@@ -19,7 +19,7 @@ import { useTheme } from "@mui/material/styles";
 import { Add, Update, Verified, FilterList } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { getAllUsers } from "../../utils/user";
-import { Link as RouterLink } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,6 +32,9 @@ export default function UserManagement() {
   const [rowToDelete, setRowToDelete] = useState(null);
   const [filterStatus, setFilterStatus] = useState("");
   const theme = useTheme();
+  const navigate = useNavigate();
+
+  const [selectedUserIds, setSelectedUserIds] = useState([]); // State untuk menyimpan ID pengguna yang dipilih
 
   const columns = [
     { field: "user.nama_lengkap", headerName: "Nama Pengelola", flex: 1, minWidth: 180 },
@@ -42,10 +45,52 @@ export default function UserManagement() {
     { field: "pengelola.email", headerName: "Email PDAM", flex: 1, minWidth: 200 },
     { field: "pengelola.telpon", headerName: "Nomor Telpon PDAM", flex: 1, minWidth: 150 },
     { field: "langganan.status", headerName: "Status Langganan", flex: 1, minWidth: 150 },
-    { field: "langganan.mulai_langganan", headerName: "Tanggal Mulai", flex: 1, minWidth: 130 },
-    { field: "langganan.akhir_langganan", headerName: "Tanggal Akhir", flex: 1, minWidth: 130 },
+    {
+      field: "langganan.mulai_langganan",
+      headerName: "Tanggal Mulai",
+      flex: 1,
+      minWidth: 130,
+      renderCell: (params) => {
+        const raw = params.row["langganan.mulai_langganan"];
+        if (!raw) return "-";
+        const d = new Date(raw);
+        if (isNaN(d)) return "-";
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+        return `${day} / ${month} / ${year}`;
+      },
+    },
+    {
+      field: "langganan.akhir_langganan",
+      headerName: "Tanggal Akhir",
+      flex: 1,
+      minWidth: 130,
+      renderCell: (params) => {
+        const raw = params.row["langganan.akhir_langganan"];
+        if (!raw) return "-";
+        const d = new Date(raw);
+        if (isNaN(d)) return "-";
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+        return `${day} / ${month} / ${year}`;
+      },
+    },
     { field: "paket.nama_paket - paket.masa_aktif paket.satuan", headerName: "Paket Langganan", flex: 1, minWidth: 150 },
-    { field: "paket.harga_paket", headerName: "Harga Paket", flex: 1, minWidth: 120 },
+    {
+      field: "paket.harga_paket",
+      headerName: "Harga Paket",
+      flex: 1,
+      minWidth: 120,
+      renderCell: (params) => {
+        const value = params.row["paket.harga_paket"];
+        if (value !== undefined && value !== null && value !== "-") {
+          return `Rp ${Number(value).toLocaleString("id-ID")}`;
+        }
+        return "-";
+      },
+    },
     {
       field: "action",
       headerName: "Aksi",
@@ -58,6 +103,19 @@ export default function UserManagement() {
       headerAlign: "center",
       renderCell: (params) => {
         const isAdmin = params.row.user?.jabatan === "Administrator";
+        const handleEditClick = (e) => {
+          e.stopPropagation();
+          if (!isAdmin) {
+            navigate(`/pengelola/edit/${params.row.id}`);
+          }
+        };
+        const handleDeleteClick = (e) => {
+          e.stopPropagation();
+          if (!isAdmin) {
+            setRowToDelete(params.row);
+            setOpenDeleteDialog(true);
+          }
+        };
         return (
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 1, height: "100%" }}>
             <ActionIconButton
@@ -72,6 +130,7 @@ export default function UserManagement() {
                 justifyContent: "center",
                 alignItems: "center",
               }}
+              onClick={handleEditClick}
             >
               <Edit fontSize="small" />
             </ActionIconButton>
@@ -87,6 +146,7 @@ export default function UserManagement() {
                 justifyContent: "center",
                 alignItems: "center",
               }}
+              onClick={handleDeleteClick}
             >
               <Delete fontSize="small" />
             </ActionIconButton>
@@ -101,8 +161,10 @@ export default function UserManagement() {
     const matchStatus = filterStatus ? row.langganan?.status === filterStatus : true;
     return matchNama && matchStatus;
   });
-  const dataGridRows = filteredRows.map((row, idx) => ({
-    id: row.id ?? idx + 1,
+
+  const dataGridRows = filteredRows.map((row) => ({
+    id: row.id,
+    "user.id": row.user?.id || "-",
     "user.nama_lengkap": row.user?.nama_lengkap || "-",
     "user.email": row.user?.email || "-",
     "user.telpon": row.user?.telpon || "-",
@@ -126,14 +188,6 @@ export default function UserManagement() {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
-
-  const handleTambahUser = () => {
-    alert("Navigasi ke tambah pengguna");
-  };
-
-  const handleHapusUser = () => {
-    alert("Hapus Pengguna yang di-select");
   };
 
   const [anchorElMenu, setAnchorElMenu] = useState(null);
@@ -170,6 +224,13 @@ export default function UserManagement() {
       .catch(() => setLoading(false));
   }, []);
 
+  // Menangani pemilihan checkbox dengan selectionModel
+  const handleSelectionUserIds = (ids) => {
+    setSelectedUserIds(ids); // Memperbarui state dengan ID yang dipilih
+    // Log user ID yang dipilih
+    console.log("User ID yang dipilih:", ids);
+  };
+
   return (
     <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", mt: 3 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
@@ -183,28 +244,16 @@ export default function UserManagement() {
             size="small"
             sx={{ width: "250px", height: "40px" }}
             onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              sx: { height: "40px", boxSizing: "border-box", display: "flex", alignItems: "center" },
-            }}
           />
-
           <Button
             variant="outlined"
             color="primary"
-            sx={{
-              height: "40px",
-              boxShadow: "none",
-              px: 3,
-              minWidth: 0,
-              display: "flex",
-              alignItems: "center",
-            }}
+            sx={{ height: "40px", boxShadow: "none", px: 3 }}
             endIcon={<ArrowDropDownIcon />}
             onClick={handleFilterClick}
           >
             Filter
           </Button>
-
           <Menu anchorEl={anchorElFilter} open={Boolean(anchorElFilter)} onClose={handleFilterClose}>
             <MenuItem onClick={() => handleFilterStatus("Aktif")}>Pengelola Aktif</MenuItem>
             <MenuItem onClick={() => handleFilterStatus("Tidak Aktif")}>Pengelola Tidak Aktif</MenuItem>
@@ -214,50 +263,34 @@ export default function UserManagement() {
           <Button
             variant="contained"
             color="success"
-            sx={{
-              height: "40px",
-              boxShadow: "none",
-              px: 3,
-              minWidth: 0,
-              display: "flex",
-              alignItems: "center",
-            }}
+            sx={{ height: "40px", boxShadow: "none", px: 3 }}
             endIcon={<ArrowDropDownIcon />}
             onClick={handleMenuClick}
           >
             Menu
           </Button>
-
           <Menu anchorEl={anchorElMenu} open={Boolean(anchorElMenu)} onClose={handleMenuClose}>
-            <MenuItem
-              component={RouterLink}
-              to="/paket-pengelola"
-              onClick={handleMenuClose}
-              style={{ display: "flex", alignItems: "center" }}
-            >
+            <MenuItem component={Link} to="/paket-pengelola" onClick={handleMenuClose}>
               <FilterList style={{ fontSize: 20, marginRight: 8 }} />
               Kelola Paket
             </MenuItem>
             <Divider />
-            <MenuItem component={RouterLink} to="/pengelola/tambah" style={{ display: "flex", alignItems: "center" }}>
+            <MenuItem component={Link} to="/pengelola/tambah" onClick={handleMenuClose}>
               <Add style={{ fontSize: 20, marginRight: 8 }} />
               Tambah Pengelola
             </MenuItem>
-            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }}>
+            <MenuItem onClick={handleMenuClose}>
               <Update style={{ fontSize: 20, marginRight: 8 }} />
               Perbaharui Langganan
             </MenuItem>
-            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }}>
+            <MenuItem onClick={handleMenuClose}>
               <Verified style={{ fontSize: 20, marginRight: 8 }} />
               Verifikasi Pembayaran
-            </MenuItem>
-            <MenuItem onClick={handleMenuClose} style={{ display: "flex", alignItems: "center" }} disabled>
-              <Delete style={{ fontSize: 20, marginRight: 8 }} />
-              Hapus Pilihan
             </MenuItem>
           </Menu>
         </Box>
       </Box>
+
       <DataGrid
         checkboxSelection
         rows={dataGridRows}
@@ -268,7 +301,10 @@ export default function UserManagement() {
         onPageSizeChange={handleChangeRowsPerPage}
         pagination
         loading={loading}
+        selectionModel={selectedUserIds} // Menambahkan selectionModel untuk mengelola pemilihan secara manual
+        onSelectionModelChange={(newSelectionModel) => handleSelectionUserIds(newSelectionModel)}
       />
+
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
         <DialogTitle>Konfirmasi Hapus</DialogTitle>
         <DialogContent>

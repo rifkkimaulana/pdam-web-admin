@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate, Form } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import SignIn from "../pages/auth/sign-in/SignIn";
 import SignUp from "../pages/auth/sign-up/SignUp";
 import ForgotPasswordPage from "../pages/auth/forgot-password/ForgotPassword";
@@ -25,6 +25,7 @@ import FormUbahStaf from "../pages/staf/formUbahStaf";
 
 import Pengelola from "../pages/pengelola/PengelolaContent";
 import TambahPengelola from "../pages/pengelola/TambahPengelola";
+import UbahPengelola from "../pages/pengelola/EditPengelola";
 import PaketPengelolaContent from "../pages/paket-pengelola/PaketContent";
 
 import { getToken } from "../utils/auth";
@@ -139,6 +140,14 @@ function AppRouter() {
             element={
               <PrivateRoute>
                 <TambahPengelola />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengelola/edit/:id"
+            element={
+              <PrivateRoute>
+                <UbahPengelola />
               </PrivateRoute>
             }
           />
