@@ -1,10 +1,10 @@
-// API utility functions (local, tidak perlu import dari utils)
 import axios from "./api";
 
 const apiBase = "/paket-langganan";
 
 export const getAllPaketLangganan = async () => {
   const res = await axios.get(apiBase);
+  console.log("API Response:", res.data);
   return res.data;
 };
 

@@ -16,7 +16,7 @@ import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import Delete from "@mui/icons-material/Delete";
+
 import {
   getAllPaketLangganan,
   getPaketLanggananById,
@@ -31,9 +31,7 @@ export default function PaketContent() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [anchorElMenu, setAnchorElMenu] = useState(null);
-  const [selected, setSelected] = useState([]); // boleh dibiarkan, tapi tidak dipakai lagi
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
@@ -52,8 +50,6 @@ export default function PaketContent() {
       filterable: false,
       disableColumnMenu: true,
       renderCell: (params) => {
-        // Hitung nomor urut berdasarkan index di dataGridRows
-        // Gunakan index dari dataGridRows agar selalu sesuai tampilan
         const index = dataGridRows.findIndex((row) => row.id === params.id);
         return index >= 0 ? index + 1 : "";
       },
@@ -70,7 +66,6 @@ export default function PaketContent() {
         const masaAktif = params?.row?.masa_aktif;
         const satuan = params?.row?.satuan;
 
-        // Gabungkan masa_aktif dan satuan
         return masaAktif && satuan ? `${masaAktif} ${satuan}` : "-";
       },
     },
@@ -84,11 +79,10 @@ export default function PaketContent() {
       renderCell: (params) => {
         const value = params?.row?.harga_paket;
 
-        // Pastikan harga_paket diformat dengan benar
         if (value !== undefined && value !== null) {
           return `Rp ${Number(value).toLocaleString()}`;
         }
-        return "-"; // Tampilkan "-" jika harga_paket kosong
+        return "-";
       },
     },
     { field: "deskripsi", headerName: "Deskripsi", flex: 2, minWidth: 200 },
@@ -122,7 +116,7 @@ export default function PaketContent() {
       .then((data) => {
         const mapped = (data || []).map((item, idx) => ({
           ...item,
-          id: String(item.id || item.id_paket || idx + 1), // pastikan id selalu string
+          id: String(item.id || item.id_paket || idx + 1),
         }));
         setRows(mapped);
         setLoading(false);
@@ -134,29 +128,16 @@ export default function PaketContent() {
 
   const filteredRows = rows.filter((row) => row.nama_paket.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  // Use all filtered rows for DataGrid, let DataGrid handle pagination
   const dataGridRows = filteredRows;
 
-  const handleChangePage = (params) => {
-    setPage(params);
-  };
-
-  const handleChangeRowsPerPage = (params) => {
-    setRowsPerPage(params);
-    setPage(0);
-  };
-
-  // Edit Paket handler
   const handleEdit = async (row) => {
     setFormDialogLoading(true);
     setFormDialogOpen(true);
     try {
-      // Ambil data dari rows berdasarkan id, bukan dari row langsung
       const paket = rows.find((item) => item.id === row.id);
       if (paket) {
         setFormDialogInitial(paket);
       } else {
-        // fallback ke API jika tidak ditemukan di rows
         const data = await getPaketLanggananById(row.id);
         setFormDialogInitial(data);
       }
@@ -177,7 +158,6 @@ export default function PaketContent() {
     setDeleteDialogOpen(true);
   };
 
-  // Fungsi hapus paket (API + update state)
   const handleConfirmDelete = async () => {
     if (!rowToDelete?.id) return;
     try {
@@ -204,7 +184,6 @@ export default function PaketContent() {
     setRowToDelete(null);
   };
 
-  // Menu handler
   const handleMenuClick = (event) => {
     setAnchorElMenu(event.currentTarget);
   };
@@ -212,19 +191,16 @@ export default function PaketContent() {
     setAnchorElMenu(null);
   };
 
-  // Tambah Paket handler
   const handleAddPaket = () => {
     setFormDialogInitial(null);
     setFormDialogOpen(true);
     handleMenuClose();
   };
 
-  // Submit handler untuk tambah/edit paket
   const handleSubmitPaket = async (form) => {
     setFormDialogLoading(true);
     try {
       if (formDialogInitial && formDialogInitial.id) {
-        // Edit (gunakan id)
         await updatePaketLangganan(formDialogInitial.id, form, {
           headers: { Accept: "application/json", "Content-Type": "application/json" },
           transformRequest: [(data) => JSON.stringify(data)],
@@ -232,7 +208,6 @@ export default function PaketContent() {
         setRows((prev) => prev.map((item) => (item.id === formDialogInitial.id ? { ...item, ...form, id: formDialogInitial.id } : item)));
         toast.success("Paket berhasil diupdate!");
       } else {
-        // Tambah (jangan sertakan id di payload, gunakan response.data.data)
         const response = await createPaketLangganan(form, {
           headers: { Accept: "application/json", "Content-Type": "application/json" },
           transformRequest: [(data) => JSON.stringify(data)],
@@ -317,7 +292,6 @@ export default function PaketContent() {
                     <Add style={{ fontSize: 20, marginRight: 8 }} />
                     Tambah Paket
                   </MenuItem>
-                  {/* Hapus MenuItem Hapus Pilihan */}
                 </Menu>
               </Box>
             </Box>
@@ -334,7 +308,6 @@ export default function PaketContent() {
                 setRowsPerPage(params);
                 setPage(0);
               }}
-              // Hapus checkboxSelection, selectionModel, dan onSelectionModelChange
               getRowId={(row) => row.id}
             />
             <Dialog
@@ -346,7 +319,6 @@ export default function PaketContent() {
               <DialogTitle id="alert-dialog-title">Konfirmasi Hapus</DialogTitle>
               <DialogContent>
                 <DialogContentText id="alert-dialog-description">
-                  {/* Hapus logika konfirmasi hapus banyak, hanya tampilkan konfirmasi hapus satuan */}
                   Apakah Anda yakin ingin menghapus paket <b>{rowToDelete?.nama_paket}</b>?
                 </DialogContentText>
               </DialogContent>
@@ -354,12 +326,7 @@ export default function PaketContent() {
                 <Button onClick={handleCancelDelete} color="primary">
                   Batal
                 </Button>
-                <Button
-                  onClick={handleConfirmDelete}
-                  color="error"
-                  autoFocus
-                  // Selalu enable karena hanya hapus satuan
-                >
+                <Button onClick={handleConfirmDelete} color="error" autoFocus>
                   Hapus
                 </Button>
               </DialogActions>
@@ -383,7 +350,6 @@ export default function PaketContent() {
   );
 }
 
-// Tambah/Edit Dialog Formulir langsung di file ini
 function PaketFormDialog({ open, onClose, onSubmit, initialData, loading }) {
   const [form, setForm] = React.useState({
     nama_paket: "",
@@ -394,7 +360,6 @@ function PaketFormDialog({ open, onClose, onSubmit, initialData, loading }) {
   });
 
   React.useEffect(() => {
-    // Jika initialData ada dan dialog open, isi form dengan data paket yang akan diedit
     if (open && initialData && initialData.id) {
       setForm({
         nama_paket: initialData.nama_paket ?? "",
@@ -404,7 +369,6 @@ function PaketFormDialog({ open, onClose, onSubmit, initialData, loading }) {
         deskripsi: initialData.deskripsi ?? "",
       });
     } else if (open && !initialData) {
-      // Jika tambah, reset form
       setForm({
         nama_paket: "",
         harga_paket: "",
@@ -415,7 +379,6 @@ function PaketFormDialog({ open, onClose, onSubmit, initialData, loading }) {
     }
   }, [open, initialData]);
 
-  // Handler penutupan dialog yang konsisten
   const handleDialogClose = () => {
     if (document.activeElement) document.activeElement.blur();
     onClose();
