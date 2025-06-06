@@ -194,7 +194,6 @@ const MultiStepForm = () => {
     }
     setLoading(true);
     try {
-      // Siapkan payload sesuai struktur yang diinginkan
       let payload;
       let isMultipart = false;
       // Cek jika ada file yang diupload
@@ -506,8 +505,6 @@ const MultiStepForm = () => {
               value={formData.pengelola.deskripsi || ""}
               onChange={(e) => handleInputChange(e, "pengelola")}
               fullWidth
-              multiline
-              rows={4}
               margin="normal"
             />
             <Grid container spacing={2} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>

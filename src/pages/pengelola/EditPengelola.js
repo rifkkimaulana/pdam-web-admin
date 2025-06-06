@@ -65,26 +65,23 @@ const MultiStepForm = () => {
     },
   });
 
-  const [loading, setLoading] = useState(false); // Status loading saat pengiriman
+  const [loading, setLoading] = useState(false);
   const [paketOptions, setPaketOptions] = useState([]);
-  const [fieldErrors, setFieldErrors] = useState({}); // Untuk error per field
+  const [fieldErrors, setFieldErrors] = useState({});
   const [openFotoDialog, setOpenFotoDialog] = useState(false);
   const [fotoDialogSrc, setFotoDialogSrc] = useState("");
   const [fotoDialogTitle, setFotoDialogTitle] = useState("");
   const navigate = useNavigate();
 
-  // Langkah-langkah formulir
   const steps = ["Detail Pengguna", "Data Pengelola & Paket"];
 
   useEffect(() => {
-    // Ambil data paket langganan untuk pilihan paket
     getAllPaketLangganan().then((data) => {
       setPaketOptions(Array.isArray(data) ? data : []);
     });
   }, []);
 
   useEffect(() => {
-    // Ambil data user by id dan mapping ke formData
     const fetchData = async () => {
       try {
         const data = await getUserById(id);
@@ -533,8 +530,6 @@ const MultiStepForm = () => {
               value={formData.pengelola.deskripsi || ""}
               onChange={(e) => handleInputChange(e, "pengelola")}
               fullWidth
-              multiline
-              rows={4}
               margin="normal"
             />
             <Grid container spacing={2} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>

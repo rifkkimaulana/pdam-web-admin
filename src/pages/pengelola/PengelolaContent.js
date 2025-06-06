@@ -316,7 +316,7 @@ export default function UserManagement() {
       setCheckedUserIds([]);
       // Refresh data
       setLoading(true);
-      getAllUsers(page + 1, pageSize, searchTerm, filterStatus)
+      getAllUsers(page + 1, pageSize, searchTerm, filterStatus, jabatan)
         .then((data) => {
           setRows(data.data || []);
           setTotalRows(Number(data.total) || 0);
