@@ -21,6 +21,13 @@ import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAllPaketLangganan } from "../../utils/paketLangganan";
 
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+
 // Fungsi untuk membuat komponen form
 const MultiStepForm = () => {
   const { id } = useParams();
@@ -61,6 +68,9 @@ const MultiStepForm = () => {
   const [loading, setLoading] = useState(false); // Status loading saat pengiriman
   const [paketOptions, setPaketOptions] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({}); // Untuk error per field
+  const [openFotoDialog, setOpenFotoDialog] = useState(false);
+  const [fotoDialogSrc, setFotoDialogSrc] = useState("");
+  const [fotoDialogTitle, setFotoDialogTitle] = useState("");
   const navigate = useNavigate();
 
   // Langkah-langkah formulir
@@ -289,6 +299,41 @@ const MultiStepForm = () => {
     }
   };
 
+  // Fungsi untuk menampilkan dialog foto
+  const handleShowFoto = (type) => {
+    let src = "";
+    let title = "";
+    if (type === "profil") {
+      title = "Foto Profil";
+      if (formData.pengguna.pictures instanceof File) {
+        src = URL.createObjectURL(formData.pengguna.pictures);
+      } else if (formData.user && formData.user.pictures) {
+        src = formData.user.pictures;
+      } else if (formData.pengguna.pictures) {
+        src = formData.pengguna.pictures;
+      }
+    } else if (type === "identitas") {
+      title = "Foto Identitas";
+      if (formData.pengguna.file_identitas instanceof File) {
+        src = URL.createObjectURL(formData.pengguna.file_identitas);
+      } else if (formData.user && formData.user.file_identitas) {
+        src = formData.user.file_identitas;
+      } else if (formData.pengguna.file_identitas) {
+        src = formData.pengguna.file_identitas;
+      }
+    } else if (type === "logo") {
+      title = "Logo Pengelola";
+      if (formData.pengelola.logo instanceof File) {
+        src = URL.createObjectURL(formData.pengelola.logo);
+      } else if (formData.pengelola.logo) {
+        src = formData.pengelola.logo;
+      }
+    }
+    setFotoDialogSrc(src);
+    setFotoDialogTitle(title);
+    setOpenFotoDialog(true);
+  };
+
   // Rendering setiap langkah formulir
   const renderStepContent = (step) => {
     switch (step) {
@@ -308,11 +353,18 @@ const MultiStepForm = () => {
                     variant="outlined"
                   />
                 </Grid>
-                <Grid size={{ xs: 4, sm: 4, lg: 4 }}>
+                <Grid size={{ xs: 2, sm: 2, lg: 2 }}>
                   <FormControl fullWidth margin="normal">
                     <Button variant="contained" component="label" margin="normal">
-                      Upload Foto Profil
+                      Unggah
                       <input type="file" hidden onChange={(e) => handleInputChange(e, "pengguna")} name="pictures" />
+                    </Button>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 2, sm: 2, lg: 2 }}>
+                  <FormControl fullWidth margin="normal">
+                    <Button startIcon={<VisibilityIcon />} onClick={() => handleShowFoto("profil")}>
+                      Lihat
                     </Button>
                   </FormControl>
                 </Grid>
@@ -401,11 +453,18 @@ const MultiStepForm = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+              <Grid size={{ xs: 4, sm: 4, lg: 4 }}>
                 <FormControl fullWidth margin="normal">
                   <Button variant="contained" component="label" margin="normal">
                     Upload Foto Identitas
                     <input type="file" hidden onChange={(e) => handleInputChange(e, "pengguna")} name="file_identitas" />
+                  </Button>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 2, sm: 2, lg: 2 }}>
+                <FormControl fullWidth margin="normal">
+                  <Button startIcon={<VisibilityIcon />} onClick={() => handleShowFoto("identitas")}>
+                    Lihat
                   </Button>
                 </FormControl>
               </Grid>
@@ -497,11 +556,18 @@ const MultiStepForm = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+              <Grid size={{ xs: 4, sm: 4, lg: 4 }}>
                 <FormControl fullWidth margin="normal">
                   <Button variant="contained" component="label" margin="normal">
                     Upload Logo Pengelola
                     <input type="file" hidden onChange={(e) => handleInputChange(e, "pengelola")} name="logo" />
+                  </Button>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 2, sm: 2, lg: 2 }}>
+                <FormControl fullWidth margin="normal">
+                  <Button startIcon={<VisibilityIcon />} onClick={() => handleShowFoto("logo")}>
+                    Lihat
                   </Button>
                 </FormControl>
               </Grid>
@@ -570,6 +636,33 @@ const MultiStepForm = () => {
         </Grid>
       </Grid>
       <Copyright sx={{ my: 4 }} />
+      <Dialog open={openFotoDialog} onClose={() => setOpenFotoDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {fotoDialogTitle}
+          <IconButton
+            aria-label="close"
+            onClick={() => setOpenFotoDialog(false)}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+            size="large"
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers sx={{ textAlign: "center" }}>
+          {fotoDialogSrc ? (
+            <img src={fotoDialogSrc} alt={fotoDialogTitle} style={{ maxWidth: "100%", maxHeight: 400, borderRadius: 8 }} />
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              Tidak ada foto tersedia.
+            </Typography>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

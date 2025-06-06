@@ -20,6 +20,12 @@ import { createUser } from "../../utils/user";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { getAllPaketLangganan } from "../../utils/paketLangganan";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 // Fungsi untuk membuat komponen form
 const MultiStepForm = () => {
@@ -60,6 +66,9 @@ const MultiStepForm = () => {
   const [loading, setLoading] = useState(false); // Status loading saat pengiriman
   const [paketOptions, setPaketOptions] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({}); // Untuk error per field
+  const [openFotoDialog, setOpenFotoDialog] = useState(false);
+  const [fotoDialogSrc, setFotoDialogSrc] = useState("");
+  const [fotoDialogTitle, setFotoDialogTitle] = useState("");
   const navigate = useNavigate();
 
   // Langkah-langkah formulir
@@ -273,6 +282,27 @@ const MultiStepForm = () => {
     }
   };
 
+  // Fungsi untuk menampilkan dialog foto (hanya preview file baru)
+  const handleShowFoto = (type) => {
+    let src = "";
+    let title = "";
+    if (type === "profil" && formData.pengguna.pictures instanceof File) {
+      src = URL.createObjectURL(formData.pengguna.pictures);
+      title = "Foto Profil";
+    }
+    if (type === "identitas" && formData.pengguna.file_identitas instanceof File) {
+      src = URL.createObjectURL(formData.pengguna.file_identitas);
+      title = "Foto Identitas";
+    }
+    if (type === "logo" && formData.pengelola.logo instanceof File) {
+      src = URL.createObjectURL(formData.pengelola.logo);
+      title = "Logo Pengelola";
+    }
+    setFotoDialogSrc(src);
+    setFotoDialogTitle(title);
+    setOpenFotoDialog(true);
+  };
+
   // Rendering setiap langkah formulir
   const renderStepContent = (step) => {
     switch (step) {
@@ -281,7 +311,7 @@ const MultiStepForm = () => {
           <>
             <FormControl fullWidth margin="normal">
               <Grid container spacing={2} columns={12}>
-                <Grid size={{ xs: 8, sm: 8, lg: 8 }}>
+                <Grid size={7}>
                   <TextField
                     label="Nama Lengkap"
                     name="nama_lengkap"
@@ -292,12 +322,21 @@ const MultiStepForm = () => {
                     variant="outlined"
                   />
                 </Grid>
-                <Grid size={{ xs: 4, sm: 4, lg: 4 }}>
+                <Grid size={3}>
                   <FormControl fullWidth margin="normal">
                     <Button variant="contained" component="label" margin="normal">
-                      Upload Foto Profil
+                      Unggah
                       <input type="file" hidden onChange={(e) => handleInputChange(e, "pengguna")} name="pictures" />
                     </Button>
+                  </FormControl>
+                </Grid>
+                <Grid size={2}>
+                  <FormControl fullWidth margin="normal">
+                    {formData.pengguna.pictures instanceof File && (
+                      <Button onClick={() => handleShowFoto("profil")}>
+                        <VisibilityIcon />
+                      </Button>
+                    )}
                   </FormControl>
                 </Grid>
               </Grid>
@@ -369,7 +408,7 @@ const MultiStepForm = () => {
               margin="normal"
             />
             <Grid container spacing={2} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
-              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+              <Grid size={5}>
                 <FormControl fullWidth margin="normal">
                   <InputLabel>Jenis Identitas</InputLabel>
                   <Select
@@ -385,12 +424,21 @@ const MultiStepForm = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+              <Grid size={4}>
                 <FormControl fullWidth margin="normal">
                   <Button variant="contained" component="label" margin="normal">
                     Upload Foto Identitas
                     <input type="file" hidden onChange={(e) => handleInputChange(e, "pengguna")} name="file_identitas" />
                   </Button>
+                </FormControl>
+              </Grid>
+              <Grid size={3}>
+                <FormControl fullWidth margin="normal">
+                  {formData.pengguna.file_identitas instanceof File && (
+                    <Button onClick={() => handleShowFoto("identitas")}>
+                      <VisibilityIcon />
+                    </Button>
+                  )}
                 </FormControl>
               </Grid>
             </Grid>
@@ -463,14 +511,14 @@ const MultiStepForm = () => {
               margin="normal"
             />
             <Grid container spacing={2} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
-              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+              <Grid size={6}>
                 {" "}
                 <FormControl fullWidth margin="normal">
                   <InputLabel>Paket Langganan</InputLabel>
                   <Select
                     label="Pilih Paket Langganan"
                     name="paket_id"
-                    value={formData.langganan.paket_id}
+                    value={formData.langganan.paket_id ?? ""}
                     onChange={(e) => handleInputChange(e, "langganan")}
                   >
                     {paketOptions.map((paket) => (
@@ -481,12 +529,21 @@ const MultiStepForm = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{ xs: 6, sm: 6, lg: 6 }}>
+              <Grid size={4}>
                 <FormControl fullWidth margin="normal">
                   <Button variant="contained" component="label" margin="normal">
                     Upload Logo Pengelola
                     <input type="file" hidden onChange={(e) => handleInputChange(e, "pengelola")} name="logo" />
                   </Button>
+                </FormControl>
+              </Grid>
+              <Grid size={2}>
+                <FormControl fullWidth margin="normal">
+                  {formData.pengelola.logo instanceof File && (
+                    <Button onClick={() => handleShowFoto("logo")}>
+                      <VisibilityIcon />
+                    </Button>
+                  )}
                 </FormControl>
               </Grid>
             </Grid>
@@ -554,6 +611,33 @@ const MultiStepForm = () => {
         </Grid>
       </Grid>
       <Copyright sx={{ my: 4 }} />
+      <Dialog open={openFotoDialog} onClose={() => setOpenFotoDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {fotoDialogTitle}
+          <IconButton
+            aria-label="close"
+            onClick={() => setOpenFotoDialog(false)}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+            size="large"
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers sx={{ textAlign: "center" }}>
+          {fotoDialogSrc ? (
+            <img src={fotoDialogSrc} alt={fotoDialogTitle} style={{ maxWidth: "100%", maxHeight: 400, borderRadius: 8 }} />
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              Tidak ada foto tersedia.
+            </Typography>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
