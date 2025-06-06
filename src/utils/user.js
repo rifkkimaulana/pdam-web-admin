@@ -1,12 +1,19 @@
 import api from "./api";
 
 // Tambahkan search dan status ke parameter
-export const getAllUsers = async (page = 0, limit = 10, search = "", status = "") => {
+export const getAllUsers = async (page = 1, limit = "", search = "", status = "", jabatan = "") => {
   try {
-    const params = { page, limit };
+    // Pastikan page minimal 1 dan limit minimal 1
+    const pageNum = Number(page) > 0 ? Number(page) : 1;
+    const limitNum = Number(limit) > 0 ? Number(limit) : 10;
+    const params = { page: pageNum, limit: limitNum };
     if (search) params.search = search;
     if (status) params.status = status;
+    if (jabatan) params.jabatan = jabatan;
     const response = await api.get("/users", { params });
+    //console.log("API Response:", response.data);
+
+    // console.log("params:", params);
 
     return {
       data: (response.data.data || []).map((item) => ({
@@ -23,7 +30,7 @@ export const getAllUsers = async (page = 0, limit = 10, search = "", status = ""
       perPage: response.data.per_page,
     };
   } catch (error) {
-    console.error("Error fetching users:", error);
+    // console.error("Error fetching users:", error);
     return { data: [], total: 0, page: 0, lastPage: 0, perPage: 10 };
   }
 };

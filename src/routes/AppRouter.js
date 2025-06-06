@@ -16,7 +16,6 @@ import PenugasanContent from "../pages/penugasan/PenugasanContent";
 import PengaturanContent from "../pages/pengaturan/PengaturanContent";
 import KewajibanContent from "../pages/kewajiban/KewajibanContent";
 
-import FormUser from "../pages/pengelola/FormUser";
 import TambahPaket from "../pages/paket/TambahPaket";
 import EditPaket from "../pages/paket/EditPaket";
 import StafContent from "../pages/staf/StafContent";
@@ -160,22 +159,6 @@ function AppRouter() {
             }
           />
 
-          <Route
-            path="pengelola/tambah"
-            element={
-              <PrivateRoute>
-                <FormUser />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="user/edit/:id"
-            element={
-              <PrivateRoute>
-                <FormUser />
-              </PrivateRoute>
-            }
-          />
           <Route
             path="paket/tambah"
             element={

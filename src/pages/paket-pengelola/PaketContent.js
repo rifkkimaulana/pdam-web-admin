@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, TextField, Typography } from "@mui/material";
+import { Box, TextField, Typography, Grid } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ActionIconButton from "../components/ActionIconButton";
@@ -252,127 +252,133 @@ export default function PaketContent() {
   };
 
   return (
-    <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", mt: 3 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
-          Daftar Paket
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <TextField
-            label=""
-            variant="outlined"
-            size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <Box component="span" sx={{ color: "text.secondary", mr: 1 }}>
-                  <svg width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M14.5 14.5L19 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                </Box>
-              ),
-            }}
-            sx={{
-              width: { xs: "100%", sm: 250 },
-              background: theme.palette.background.paper,
-              borderRadius: 1,
-              boxShadow: 1,
-              "& .MuiOutlinedInput-root": {
-                pr: 0,
-                height: 40, // Tinggi disamakan dengan button
-                minHeight: 40,
-              },
-              "& .MuiInputBase-input": {
-                py: 0,
-                height: 40,
-                display: "flex",
-                alignItems: "center",
-              },
-            }}
-            placeholder="Cari nama paket..."
-          />
-          <Button
-            variant="contained"
-            color="success"
-            sx={{
-              height: "40px",
-              boxShadow: "none",
-              px: 3,
-              minWidth: 0,
-              display: "flex",
-              alignItems: "center",
-            }}
-            endIcon={<ArrowDropDownIcon />}
-            onClick={handleMenuClick}
-          >
-            Menu
-          </Button>
-          <Menu anchorEl={anchorElMenu} open={Boolean(anchorElMenu)} onClose={handleMenuClose}>
-            <MenuItem onClick={handleAddPaket} style={{ display: "flex", alignItems: "center" }}>
-              <Add style={{ fontSize: 20, marginRight: 8 }} />
-              Tambah Paket
-            </MenuItem>
-            {/* Hapus MenuItem Hapus Pilihan */}
-          </Menu>
-        </Box>
-      </Box>
-      <DataGrid
-        rows={dataGridRows}
-        columns={columns}
-        pageSize={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
-        pagination
-        loading={loading}
-        page={page}
-        onPageChange={(params) => setPage(params)}
-        onPageSizeChange={(params) => {
-          setRowsPerPage(params);
-          setPage(0);
-        }}
-        // Hapus checkboxSelection, selectionModel, dan onSelectionModelChange
-        getRowId={(row) => row.id}
-      />
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={handleCancelDelete}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">Konfirmasi Hapus</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {/* Hapus logika konfirmasi hapus banyak, hanya tampilkan konfirmasi hapus satuan */}
-            Apakah Anda yakin ingin menghapus paket <b>{rowToDelete?.nama_paket}</b>?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelDelete} color="primary">
-            Batal
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            color="error"
-            autoFocus
-            // Selalu enable karena hanya hapus satuan
-          >
-            Hapus
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <PaketFormDialog
-        key={formDialogInitial?.id || "new"}
-        open={formDialogOpen}
-        onClose={() => {
-          if (document.activeElement) document.activeElement.blur();
-          setFormDialogOpen(false);
-          setFormDialogInitial(null);
-        }}
-        onSubmit={handleSubmitPaket}
-        initialData={formDialogInitial}
-        loading={formDialogLoading}
-      />
+    <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
+      <Grid container spacing={2} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
+        <Grid size={12}>
+          <Box sx={{ mt: 2, p: 2, borderRadius: 2, boxShadow: 1 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+              <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
+                Daftar Paket
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                <TextField
+                  label=""
+                  variant="outlined"
+                  size="small"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <Box component="span" sx={{ color: "text.secondary", mr: 1 }}>
+                        <svg width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M14.5 14.5L19 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="2" />
+                        </svg>
+                      </Box>
+                    ),
+                  }}
+                  sx={{
+                    width: { xs: "100%", sm: 250 },
+                    background: theme.palette.background.paper,
+                    borderRadius: 1,
+                    boxShadow: 1,
+                    "& .MuiOutlinedInput-root": {
+                      pr: 0,
+                      height: 40, // Tinggi disamakan dengan button
+                      minHeight: 40,
+                    },
+                    "& .MuiInputBase-input": {
+                      py: 0,
+                      height: 40,
+                      display: "flex",
+                      alignItems: "center",
+                    },
+                  }}
+                  placeholder="Cari nama paket..."
+                />
+                <Button
+                  variant="contained"
+                  color="success"
+                  sx={{
+                    height: "40px",
+                    boxShadow: "none",
+                    px: 3,
+                    minWidth: 0,
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  endIcon={<ArrowDropDownIcon />}
+                  onClick={handleMenuClick}
+                >
+                  Menu
+                </Button>
+                <Menu anchorEl={anchorElMenu} open={Boolean(anchorElMenu)} onClose={handleMenuClose}>
+                  <MenuItem onClick={handleAddPaket} style={{ display: "flex", alignItems: "center" }}>
+                    <Add style={{ fontSize: 20, marginRight: 8 }} />
+                    Tambah Paket
+                  </MenuItem>
+                  {/* Hapus MenuItem Hapus Pilihan */}
+                </Menu>
+              </Box>
+            </Box>
+            <DataGrid
+              rows={dataGridRows}
+              columns={columns}
+              pageSize={rowsPerPage}
+              rowsPerPageOptions={[5, 10, 25]}
+              pagination
+              loading={loading}
+              page={page}
+              onPageChange={(params) => setPage(params)}
+              onPageSizeChange={(params) => {
+                setRowsPerPage(params);
+                setPage(0);
+              }}
+              // Hapus checkboxSelection, selectionModel, dan onSelectionModelChange
+              getRowId={(row) => row.id}
+            />
+            <Dialog
+              open={deleteDialogOpen}
+              onClose={handleCancelDelete}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+            >
+              <DialogTitle id="alert-dialog-title">Konfirmasi Hapus</DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                  {/* Hapus logika konfirmasi hapus banyak, hanya tampilkan konfirmasi hapus satuan */}
+                  Apakah Anda yakin ingin menghapus paket <b>{rowToDelete?.nama_paket}</b>?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCancelDelete} color="primary">
+                  Batal
+                </Button>
+                <Button
+                  onClick={handleConfirmDelete}
+                  color="error"
+                  autoFocus
+                  // Selalu enable karena hanya hapus satuan
+                >
+                  Hapus
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <PaketFormDialog
+              key={formDialogInitial?.id || "new"}
+              open={formDialogOpen}
+              onClose={() => {
+                if (document.activeElement) document.activeElement.blur();
+                setFormDialogOpen(false);
+                setFormDialogInitial(null);
+              }}
+              onSubmit={handleSubmitPaket}
+              initialData={formDialogInitial}
+              loading={formDialogLoading}
+            />
+          </Box>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
