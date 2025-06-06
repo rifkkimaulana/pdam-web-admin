@@ -6,33 +6,41 @@ import { Edit, Delete } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 
 export default function PengelolaDataGrid({
-  rows,
-  loading,
   checkedUserIds,
   setCheckedUserIds,
   setRowToDelete,
   setOpenDeleteDialog,
   navigate,
+  rows = [],
+  loading = false,
+  page = 0,
+  pageSize = 10,
+  rowCount = 0,
+  onPageChange,
+  onPageSizeChange,
+  initialState = {},
 }) {
   const theme = useTheme();
 
-  const dataGridRows = rows.map((row) => ({
+  // DataGrid expects each row to have a flat structure for columns.
+  // We'll flatten the API data here for easier column mapping.
+  const dataGridRows = rows.map((row, idx) => ({
     id: row.id,
-    "user.id": row.user?.id || "-",
-    "user.nama_lengkap": row.user?.nama_lengkap || "-",
-    "user.email": row.user?.email || "-",
-    "user.telpon": row.user?.telpon || "-",
-    "user.alamat": row.user?.alamat || "-",
-    "pengelola.nama_pengelola": row.pengelola?.nama_pengelola || "-",
-    "pengelola.email": row.pengelola?.email || "-",
-    "pengelola.telpon": row.pengelola?.telpon || "-",
-    "langganan.status": row.langganan?.status || "-",
-    "langganan.mulai_langganan": row.langganan?.mulai_langganan || "-",
-    "langganan.akhir_langganan": row.langganan?.akhir_langganan || "-",
-    "paket.nama_paket - paket.masa_aktif paket.satuan": row.paket
-      ? `${row.paket.nama_paket} - ${row.paket.masa_aktif} ${row.paket.satuan}`
-      : "-",
-    "paket.harga_paket": row.paket?.harga_paket || "-",
+    no: page * pageSize + idx + 1,
+    nama_lengkap: row.user?.nama_lengkap || "-",
+    email: row.user?.email || "-",
+    telpon: row.user?.telpon || "-",
+    alamat: row.user?.alamat || "-",
+    nama_pengelola: row.pengelola?.nama_pengelola || "-",
+    email_pengelola: row.pengelola?.email || "-",
+    telpon_pengelola: row.pengelola?.telpon || "-",
+    status_langganan: row.langganan?.status || "-",
+    status: row.langganan?.status || "-",
+    mulai_langganan: row.langganan?.mulai_langganan || "-",
+    akhir_langganan: row.langganan?.akhir_langganan || "-",
+    paket: row.paket ? `${row.paket.nama_paket} - ${row.paket.masa_aktif} ${row.paket.satuan}` : "-",
+    harga_paket: row.paket?.harga_paket || "-",
+    jabatan: row.user?.jabatan || "-",
     user: row.user,
   }));
 
@@ -47,7 +55,7 @@ export default function PengelolaDataGrid({
       align: "center",
       headerAlign: "center",
       renderHeader: () => {
-        const allUserIds = dataGridRows.map((row) => row["user.id"]).filter((id) => id !== "-" && id !== undefined && id !== null);
+        const allUserIds = dataGridRows.map((row) => row.id).filter((id) => id !== "-" && id !== undefined && id !== null);
         const allChecked = allUserIds.length > 0 && allUserIds.every((id) => checkedUserIds.includes(id));
         const someChecked = allUserIds.some((id) => checkedUserIds.includes(id));
         const handleHeaderChange = (e) => {
@@ -58,7 +66,6 @@ export default function PengelolaDataGrid({
             newChecked = checkedUserIds.filter((id) => !allUserIds.includes(id));
           }
           setCheckedUserIds(newChecked);
-          console.log("User ID terpilih:", newChecked);
         };
         return (
           <Checkbox
@@ -71,7 +78,7 @@ export default function PengelolaDataGrid({
         );
       },
       renderCell: (params) => {
-        const userId = params.row["user.id"];
+        const userId = params.row.id;
         const checked = checkedUserIds.includes(userId);
         const handleChange = (e) => {
           let newChecked;
@@ -81,29 +88,31 @@ export default function PengelolaDataGrid({
             newChecked = checkedUserIds.filter((id) => id !== userId);
           }
           setCheckedUserIds(newChecked);
-          console.log("User ID terpilih:", newChecked);
         };
         return <Checkbox checked={checked} onChange={handleChange} sx={{ p: 0 }} color="primary" />;
       },
     },
-    { field: "user.nama_lengkap", headerName: "Nama Pengelola", flex: 1, minWidth: 180 },
-    { field: "user.email", headerName: "Email Pengelola", flex: 1, minWidth: 200 },
-    { field: "user.telpon", headerName: "Nomor Telpon", flex: 1, minWidth: 150 },
-    { field: "user.alamat", headerName: "Alamat Pengelola", flex: 1, minWidth: 200 },
-    { field: "pengelola.nama_pengelola", headerName: "Nama PDAM", flex: 1, minWidth: 180 },
-    { field: "pengelola.email", headerName: "Email PDAM", flex: 1, minWidth: 200 },
-    { field: "pengelola.telpon", headerName: "Nomor Telpon PDAM", flex: 1, minWidth: 150 },
-    { field: "langganan.status", headerName: "Status Langganan", flex: 1, minWidth: 150 },
+    { field: "no", headerName: "No", width: 70 },
+    { field: "nama_lengkap", headerName: "Nama Pengelola", flex: 1, minWidth: 180 },
+    { field: "email", headerName: "Email Pengelola", flex: 1, minWidth: 200 },
+    { field: "telpon", headerName: "Nomor Telpon", flex: 1, minWidth: 150 },
+    { field: "alamat", headerName: "Alamat Pengelola", flex: 1, minWidth: 200 },
+    { field: "nama_pengelola", headerName: "Nama PDAM", flex: 1, minWidth: 180 },
+    { field: "email_pengelola", headerName: "Email PDAM", flex: 1, minWidth: 200 },
+    { field: "telpon_pengelola", headerName: "Nomor Telpon PDAM", flex: 1, minWidth: 150 },
+    { field: "status_langganan", headerName: "Status Langganan", flex: 1, minWidth: 150 },
+    // Jika ingin kolom status terpisah:
+    // { field: "status", headerName: "Status", flex: 1, minWidth: 120 },
     {
-      field: "langganan.mulai_langganan",
+      field: "mulai_langganan",
       headerName: "Tanggal Mulai",
       flex: 1,
       minWidth: 130,
       renderCell: (params) => {
-        const raw = params.row["langganan.mulai_langganan"];
-        if (!raw) return "-";
+        const raw = params.row.mulai_langganan;
+        if (!raw || raw === "-") return "-";
         const d = new Date(raw);
-        if (isNaN(d)) return "-";
+        if (isNaN(d)) return raw;
         const day = String(d.getDate()).padStart(2, "0");
         const month = String(d.getMonth() + 1).padStart(2, "0");
         const year = d.getFullYear();
@@ -111,29 +120,29 @@ export default function PengelolaDataGrid({
       },
     },
     {
-      field: "langganan.akhir_langganan",
+      field: "akhir_langganan",
       headerName: "Tanggal Akhir",
       flex: 1,
       minWidth: 130,
       renderCell: (params) => {
-        const raw = params.row["langganan.akhir_langganan"];
-        if (!raw) return "-";
+        const raw = params.row.akhir_langganan;
+        if (!raw || raw === "-") return "-";
         const d = new Date(raw);
-        if (isNaN(d)) return "-";
+        if (isNaN(d)) return raw;
         const day = String(d.getDate()).padStart(2, "0");
         const month = String(d.getMonth() + 1).padStart(2, "0");
         const year = d.getFullYear();
         return `${day} / ${month} / ${year}`;
       },
     },
-    { field: "paket.nama_paket - paket.masa_aktif paket.satuan", headerName: "Paket Langganan", flex: 1, minWidth: 150 },
+    { field: "paket", headerName: "Paket Langganan", flex: 1, minWidth: 150 },
     {
-      field: "paket.harga_paket",
+      field: "harga_paket",
       headerName: "Harga Paket",
       flex: 1,
       minWidth: 120,
       renderCell: (params) => {
-        const value = params.row["paket.harga_paket"];
+        const value = params.row.harga_paket;
         if (value !== undefined && value !== null && value !== "-") {
           return `Rp ${Number(value).toLocaleString("id-ID")}`;
         }
@@ -151,7 +160,7 @@ export default function PengelolaDataGrid({
       align: "center",
       headerAlign: "center",
       renderCell: (params) => {
-        const isAdmin = params.row.user?.jabatan === "Administrator";
+        const isAdmin = params.row.jabatan === "Administrator";
         const handleEditClick = (e) => {
           e.stopPropagation();
           if (!isAdmin) {
@@ -205,5 +214,19 @@ export default function PengelolaDataGrid({
     },
   ];
 
-  return <DataGrid rows={dataGridRows} columns={columns} pageSize={10} rowsPerPageOptions={[5, 10, 25, 50]} pagination loading={loading} />;
+  return (
+    <DataGrid
+      rows={dataGridRows}
+      columns={columns}
+      loading={loading}
+      page={page}
+      pageSize={pageSize}
+      rowCount={rowCount}
+      paginationMode="server"
+      onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
+      pageSizeOptions={[5, 10, 25, 50, 100]}
+      initialState={initialState}
+    />
+  );
 }

@@ -14,38 +14,43 @@ import {
 } from "@mui/material";
 import { Add, Update, Verified, FilterList } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { getAllUsers } from "../../utils/user";
+
 import { Link, useNavigate } from "react-router-dom";
 import PengelolaDataGrid from "./PengelolaDataGrid";
+import { getAllUsers } from "../../utils/user";
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const [filterStatus, setFilterStatus] = useState("");
   const [checkedUserIds, setCheckedUserIds] = useState([]);
   const [anchorElMenu, setAnchorElMenu] = useState(null);
   const [anchorElFilter, setAnchorElFilter] = useState(null);
-  const navigate = useNavigate();
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalRows, setTotalRows] = useState(0);
+  const [dataGridInitialState, setDataGridInitialState] = useState({
+    pagination: {
+      paginationModel: { pageSize: 10, page: 0 },
+    },
+    sorting: {
+      sortModel: [{ field: "user.nama_lengkap", sort: "asc" }],
+    },
+  });
 
   useEffect(() => {
     setLoading(true);
-    getAllUsers()
+    getAllUsers(page, pageSize, searchTerm, filterStatus)
       .then((data) => {
-        setRows(data || []);
+        setRows(data.data || []);
+        setTotalRows(Number(data.total) || 0);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
-
-  // Filter data sesuai search dan status
-  const filteredRows = rows.filter((row) => {
-    const matchNama = row.user?.nama_lengkap?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchStatus = filterStatus ? row.langganan?.status === filterStatus : true;
-    return matchNama && matchStatus;
-  });
+  }, [page, pageSize, searchTerm, filterStatus]);
 
   const handleMenuClick = (event) => setAnchorElMenu(event.currentTarget);
   const handleMenuClose = () => setAnchorElMenu(null);
@@ -68,7 +73,11 @@ export default function UserManagement() {
             variant="outlined"
             size="small"
             sx={{ width: "250px", height: "40px" }}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(0); // reset ke halaman pertama saat filter berubah
+            }}
           />
           <Button
             variant="contained"
@@ -103,13 +112,31 @@ export default function UserManagement() {
             </MenuItem>
           </Menu>
           <Menu anchorEl={anchorElFilter} open={Boolean(anchorElFilter)} onClose={handleFilterClose}>
-            <MenuItem selected={filterStatus === ""} onClick={() => handleFilterStatus("")}>
+            <MenuItem
+              selected={filterStatus === ""}
+              onClick={() => {
+                handleFilterStatus("");
+                setPage(0);
+              }}
+            >
               Semua Status
             </MenuItem>
-            <MenuItem selected={filterStatus === "Aktif"} onClick={() => handleFilterStatus("Aktif")}>
+            <MenuItem
+              selected={filterStatus === "Aktif"}
+              onClick={() => {
+                handleFilterStatus("Aktif");
+                setPage(0);
+              }}
+            >
               Aktif
             </MenuItem>
-            <MenuItem selected={filterStatus === "Tidak Aktif"} onClick={() => handleFilterStatus("Tidak Aktif")}>
+            <MenuItem
+              selected={filterStatus === "Tidak Aktif"}
+              onClick={() => {
+                handleFilterStatus("Tidak Aktif");
+                setPage(0);
+              }}
+            >
               Tidak Aktif
             </MenuItem>
           </Menu>
@@ -117,19 +144,24 @@ export default function UserManagement() {
       </Box>
 
       <PengelolaDataGrid
-        rows={filteredRows}
-        loading={loading}
         checkedUserIds={checkedUserIds}
         setCheckedUserIds={setCheckedUserIds}
         setRowToDelete={setRowToDelete}
         setOpenDeleteDialog={setOpenDeleteDialog}
-        navigate={navigate}
+        rows={rows}
+        loading={loading}
+        page={page}
+        pageSize={pageSize}
+        rowCount={totalRows}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        initialState={dataGridInitialState}
       />
 
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
         <DialogTitle>Konfirmasi Hapus</DialogTitle>
         <DialogContent>
-          Apakah Anda yakin ingin menghapus data pengguna <b>{rowToDelete?.namaLengkap}</b>?
+          Apakah Anda yakin ingin menghapus data pengguna <b>{rowToDelete?.user?.nama_lengkap}</b>?
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
