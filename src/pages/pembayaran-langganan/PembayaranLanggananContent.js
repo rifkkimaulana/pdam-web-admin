@@ -13,7 +13,13 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import IconButton from "@mui/material/IconButton";
 import SearchTableContent from "../components/content-components/SearchTableContent";
 import CustomPaginationTable from "../components/content-components/CustomPaginationTable";
-import { fetchPembayaranLangganan, fetchPengelola, createPembayaranLangganan, fetchPrivateFile } from "../../utils/pembayaran";
+import {
+  fetchPembayaranLangganan,
+  fetchPengelola,
+  createPembayaranLangganan,
+  fetchPrivateFile,
+  deletePembayaranLangganan,
+} from "../../utils/pembayaran";
 import dayjs from "dayjs";
 
 export default function Pembayaran() {
@@ -43,6 +49,7 @@ export default function Pembayaran() {
     bukti_bayar_url: "",
   });
   const [listLangganan, setListLangganan] = useState([]);
+  const [openLoadingDialog, setOpenLoadingDialog] = useState(false);
   const fileInputRef = useRef();
 
   console.log("selected user ids:", checkedUserIds);
@@ -225,13 +232,36 @@ export default function Pembayaran() {
     setPage(newPage);
   };
 
-  const handleHapusPembayaran = () => {
+  const handleHapusPembayaran = async () => {
     if (checkedUserIds.length === 0) {
       toast.warn("Pilih minimal satu pembayaran untuk dihapus.");
       return;
     }
-    toast.info(`Berhasil menghapus ${checkedUserIds.length} pembayaran.`);
+    setOpenLoadingDialog(true);
+    let successCount = 0;
+    let errorCount = 0;
+    for (const id of checkedUserIds) {
+      try {
+        await deletePembayaranLangganan(id);
+        successCount++;
+      } catch (err) {
+        errorCount++;
+      }
+    }
     setCheckedUserIds([]);
+    setLoading(true);
+    fetchPembayaranLangganan(1, pageSize, filterStatus, searchTerm)
+      .then((data) => {
+        setRows(data.data);
+        setTotalRows(data.total);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+    setTimeout(() => {
+      setOpenLoadingDialog(false);
+      if (successCount > 0) toast.success(`${successCount} pembayaran berhasil dihapus.`);
+      if (errorCount > 0) toast.error(`${errorCount} pembayaran gagal dihapus.`);
+    }, 3000);
   };
 
   const handleTambahPembayaran = () => {
@@ -566,6 +596,28 @@ export default function Pembayaran() {
             Simpan
           </Button>
         </Box>
+      </Dialog>
+      <Dialog open={openLoadingDialog} maxWidth="xs" fullWidth>
+        <DialogTitle>Proses Penghapusan</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 120 }}>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Menghapus pembayaran terpilih...
+          </Typography>
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <span
+              className="loader"
+              style={{
+                width: 40,
+                height: 40,
+                border: "4px solid #ccc",
+                borderTop: "4px solid #1976d2",
+                borderRadius: "50%",
+                display: "inline-block",
+                animation: "spin 1s linear infinite",
+              }}
+            />
+          </Box>
+        </DialogContent>
       </Dialog>
     </Box>
   );
