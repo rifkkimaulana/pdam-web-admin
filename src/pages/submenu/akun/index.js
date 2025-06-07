@@ -1,45 +1,88 @@
 import { Box, Card, CardContent, TextField, Button, Typography, Stack, Divider } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
+import { fetchPengelola } from "../../../utils/pembayaran";
+import { updateUser } from "../../../utils/user";
+
+import { toast } from "react-toastify";
 
 export default function AkunKeamanan({ onBack }) {
-  // Dummy data tb_user
-  const user = {
-    nama_lengkap: "Budi Santoso",
-    username: "budisantoso",
-    email: "budi@pdam.com",
-    telpon: "08123456789",
-    jenis_identitas: "KTP",
-    nomor_identitas: "1234567890",
-    alamat: "Jl. Merdeka No. 10",
-    jabatan: "Pengelola",
-  };
-
-  // Dummy data tb_pengelola
-  const pengelola = {
-    nama_pengelola: "PDAM Bandung",
-    email: "contact@pdam.co.id",
-    telpon: "0221234567",
-    alamat: "Jl. Asia Afrika No. 20, Bandung",
-    deskripsi: "Pengelola PDAM Bandung",
-  };
-
+  const [user, setUser] = React.useState(null);
+  const [pengelola, setPengelola] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
   const [form, setForm] = React.useState({
     password_lama: "",
     password_baru: "",
     konfirmasi_password: "",
   });
 
+  React.useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchPengelola();
+        // Jika response array, ambil data pertama
+        const pengelolaData = Array.isArray(data) ? data[0] : data;
+        setPengelola({
+          nama_pengelola: pengelolaData.nama_pengelola,
+          email: pengelolaData.email,
+          telpon: pengelolaData.telpon,
+          alamat: pengelolaData.alamat,
+          deskripsi: pengelolaData.deskripsi,
+        });
+        setUser({
+          nama_lengkap: pengelolaData.user?.nama_lengkap || "",
+          username: pengelolaData.user?.username || "",
+          email: pengelolaData.user?.email || "",
+          telpon: pengelolaData.user?.telpon || "",
+          jenis_identitas: pengelolaData.user?.jenis_identitas || "",
+          nomor_identitas: pengelolaData.user?.nomor_identitas || "",
+          alamat: pengelolaData.user?.alamat || "",
+          jabatan: pengelolaData.user?.jabatan || "",
+        });
+      } catch (e) {
+        setPengelola(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
   const notMatch = form.password_baru && form.konfirmasi_password && form.password_baru !== form.konfirmasi_password;
-
   const handleBack = () => {
     if (onBack) onBack();
   };
-  const handleSimpan = () => {
-    alert("Password berhasil diubah!");
+  const handleSimpan = async () => {
+    const userId = localStorage.getItem("user_id");
+    if (!userId) {
+      toast.error("User ID tidak ditemukan di localStorage.");
+      return;
+    }
+    if (form.password_baru !== form.konfirmasi_password) {
+      toast.error("Konfirmasi password tidak sama dengan password baru.");
+      return;
+    }
+    try {
+      await updateUser(userId, {
+        password_lama: form.password_lama,
+        password: form.password_baru,
+      });
+      toast.success("Password berhasil diubah!");
+      setForm({ password_lama: "", password_baru: "", konfirmasi_password: "" });
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Gagal mengubah password.";
+      toast.error(msg);
+    }
   };
+
+  if (loading) return <Typography>Loading...</Typography>;
+  if (!user || !pengelola) {
+    toast.error("Gagal memuat data akun/pengelola.");
+    return <Typography>Gagal memuat data akun/pengelola.</Typography>;
+  }
 
   return (
     <Box>
