@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, MenuItem, Box, TextField, Typography, Dialog, DialogTitle, DialogContent, Button, Grid } from "@mui/material";
+import { Menu, MenuItem, Box, TextField, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid } from "@mui/material";
 import { Verified, FilterList } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import CloseIcon from "@mui/icons-material/Close";
 import { DataGrid } from "@mui/x-data-grid";
 import Checkbox from "@mui/material/Checkbox";
 import { Delete, Add } from "@mui/icons-material";
@@ -385,12 +386,24 @@ export default function Pembayaran() {
       </Grid>
 
       <Dialog open={openBuktiDialog} onClose={() => setOpenBuktiDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Lihat Bukti Pembayaran</DialogTitle>
+        <DialogTitle sx={{ m: 0, p: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span>Lihat Bukti Pembayaran</span>
+            <IconButton
+              aria-label="close"
+              onClick={() => setOpenBuktiDialog(false)}
+              sx={{
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
         <DialogContent sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
           {buktiImage && <img src={buktiImage} alt="Bukti Pembayaran" style={{ maxWidth: "100%", maxHeight: 400 }} />}
         </DialogContent>
       </Dialog>
-
       <Dialog open={openKonfirmasiDialog} onClose={handleDialogBatal} maxWidth="sm" fullWidth>
         <DialogTitle>Konfirmasi Pembayaran</DialogTitle>
         <DialogContent>
@@ -440,7 +453,6 @@ export default function Pembayaran() {
           </Button>
         </Box>
       </Dialog>
-
       <Dialog open={openTambahDialog} onClose={handleCloseTambahDialog} maxWidth="sm" fullWidth>
         <DialogTitle>Tambah Pembayaran</DialogTitle>
         <DialogContent>
