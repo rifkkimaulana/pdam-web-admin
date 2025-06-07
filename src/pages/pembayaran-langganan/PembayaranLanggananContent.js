@@ -1,5 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, MenuItem, Box, TextField, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid } from "@mui/material";
+import {
+  Divider,
+  Menu,
+  MenuItem,
+  Box,
+  TextField,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Grid,
+} from "@mui/material";
 import { Verified, FilterList } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
@@ -19,6 +32,7 @@ import {
   createPembayaranLangganan,
   fetchPrivateFile,
   deletePembayaranLangganan,
+  updatePembayaranLangganan,
 } from "../../utils/pembayaran";
 import dayjs from "dayjs";
 
@@ -195,22 +209,58 @@ export default function Pembayaran() {
       toast.warn("Pilih minimal satu pembayaran untuk konfirmasi.");
       return;
     }
+    if (checkedUserIds.length > 1) {
+      toast.error("Hanya bisa konfirmasi satu pembayaran dalam satu waktu.");
+      return;
+    }
     // Ambil data pembayaran pertama yang dipilih
     const pembayaran = rows.find((row) => row.id === checkedUserIds[0]);
     setSelectedPembayaran(pembayaran);
     setOpenKonfirmasiDialog(true);
   };
 
-  const handleDialogKonfirmasi = () => {
-    toast.success(`Pembayaran untuk ${selectedPembayaran?.langganan?.user?.nama_lengkap || "-"} berhasil dikonfirmasi!`);
-    setOpenKonfirmasiDialog(false);
-    setCheckedUserIds([]);
+  const handleDialogKonfirmasi = async () => {
+    if (!selectedPembayaran) return;
+    try {
+      const formData = new FormData();
+      formData.append("status", "Diterima");
+      await updatePembayaranLangganan(selectedPembayaran.id, formData);
+      toast.success(`Pembayaran untuk ${selectedPembayaran.langganan?.user?.nama_lengkap || "-"} berhasil dikonfirmasi!`);
+      setOpenKonfirmasiDialog(false);
+      setCheckedUserIds([]);
+      setLoading(true);
+      fetchPembayaranLangganan(1, pageSize, filterStatus, searchTerm)
+        .then((data) => {
+          setRows(data.data);
+          setTotalRows(data.total);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    } catch (err) {
+      toast.error("Gagal mengkonfirmasi pembayaran!");
+    }
   };
 
-  const handleDialogTolak = () => {
-    toast.error(`Pembayaran untuk ${selectedPembayaran?.langganan?.user?.nama_lengkap || "-"} ditolak.`);
-    setOpenKonfirmasiDialog(false);
-    setCheckedUserIds([]);
+  const handleDialogTolak = async () => {
+    if (!selectedPembayaran) return;
+    try {
+      const formData = new FormData();
+      formData.append("status", "Ditolak");
+      await updatePembayaranLangganan(selectedPembayaran.id, formData);
+      toast.error(`Pembayaran untuk ${selectedPembayaran.langganan?.user?.nama_lengkap || "-"} ditolak.`);
+      setOpenKonfirmasiDialog(false);
+      setCheckedUserIds([]);
+      setLoading(true);
+      fetchPembayaranLangganan(1, pageSize, filterStatus, searchTerm)
+        .then((data) => {
+          setRows(data.data);
+          setTotalRows(data.total);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    } catch (err) {
+      toast.error("Gagal menolak pembayaran!");
+    }
   };
 
   const handleDialogBatal = () => {
@@ -326,6 +376,30 @@ export default function Pembayaran() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formTambah.langganan_id, listLangganan]);
+
+  // Ambil gambar bukti bayar dari API saat dialog konfirmasi dibuka dan pembayaran dipilih
+  useEffect(() => {
+    async function fetchBukti() {
+      if (openKonfirmasiDialog && selectedPembayaran && selectedPembayaran.bukti_bayar && selectedPembayaran.bukti_bayar !== "-") {
+        const [folder, ...rest] = selectedPembayaran.bukti_bayar.split("/");
+        const filename = rest.join("/");
+        try {
+          const blob = await fetchPrivateFile(folder, filename);
+          const url = URL.createObjectURL(blob);
+          setBuktiImage(url);
+        } catch (err) {
+          setBuktiImage("");
+        }
+      } else {
+        setBuktiImage("");
+      }
+    }
+    fetchBukti();
+    // Cleanup url object
+    return () => {
+      if (buktiImage) URL.revokeObjectURL(buktiImage);
+    };
+  }, [openKonfirmasiDialog, selectedPembayaran]);
 
   return (
     <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
@@ -453,28 +527,52 @@ export default function Pembayaran() {
         <DialogContent>
           {selectedPembayaran ? (
             <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                Nama Pelanggan: {selectedPembayaran.langganan?.user?.nama_lengkap || "-"}
-              </Typography>
+              <Grid container>
+                <Grid item xs={5}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Nama Pelanggan
+                  </Typography>
+                </Grid>
+                <Grid item xs={2}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    :
+                  </Typography>
+                </Grid>
+                <Grid item xs={5}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {selectedPembayaran.langganan?.user?.nama_lengkap || "-"}
+                  </Typography>
+                </Grid>
+              </Grid>
+
+              <Divider color="white" />
               <Typography variant="subtitle1" gutterBottom>
                 Nama Perusahaan: {selectedPembayaran.langganan?.pengelola?.nama_pengelola || "-"}
               </Typography>
+              <Divider color="white" />
               <Typography variant="subtitle1" gutterBottom>
                 Jumlah Pembayaran: {selectedPembayaran.jumlah_bayar ?? "-"}
               </Typography>
+              <Divider color="white" />
               <Typography variant="subtitle1" gutterBottom>
                 Metode Pembayaran: {selectedPembayaran.metode ?? "-"}
               </Typography>
+              <Divider color="white" />
               <Typography variant="subtitle1" gutterBottom>
                 Tanggal Pembayaran: {selectedPembayaran.tanggal_bayar ?? "-"}
               </Typography>
+              <Divider color="white" />
               <Typography variant="subtitle1" gutterBottom>
                 Status: {selectedPembayaran.status ?? "-"}
+              </Typography>
+              <Divider color="white" />
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Lampiran: Bukti Pembayaran
               </Typography>
               {selectedPembayaran.bukti_bayar && selectedPembayaran.bukti_bayar !== "-" && (
                 <Box sx={{ mt: 2, textAlign: "center" }}>
                   {buktiImage ? (
-                    <img src={buktiImage} alt="Bukti Pembayaran" style={{ maxWidth: 300, maxHeight: 300 }} />
+                    <img src={buktiImage} alt="Bukti Pembayaran" style={{ maxWidth: "100%", maxHeight: "100%" }} />
                   ) : (
                     <Typography variant="body2">Memuat gambar...</Typography>
                   )}
