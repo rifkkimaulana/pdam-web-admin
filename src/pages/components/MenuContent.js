@@ -5,6 +5,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
+import Collapse from "@mui/material/Collapse";
 //icon
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
@@ -16,6 +17,7 @@ import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedI
 
 import SettingsApplicationsRoundedIcon from "@mui/icons-material/SettingsApplicationsRounded";
 import FactCheckRoundedIcon from "@mui/icons-material/FactCheckRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 
 import { Link, useLocation } from "react-router-dom";
 
@@ -30,7 +32,20 @@ const mainListItems = [
   { text: "Penugasan", icon: <AssignmentTurnedInRoundedIcon />, link: "/penugasan" },
 ];
 const secondaryListItems = [
-  { text: "Pengaturan", icon: <SettingsApplicationsRoundedIcon />, link: "/pengaturan" },
+  {
+    text: "Pengaturan",
+    icon: <SettingsApplicationsRoundedIcon />,
+    children: [
+      { text: "Profil Pengelola & Perusahaan", link: "/pengaturan/profil", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+      { text: "Akun & Keamanan", link: "/pengaturan/akun", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+      { text: "Pengaturan Tarif & Paket", link: "/pengaturan/tarif-paket", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+      { text: "Pengaturan Rekening/Bank", link: "/pengaturan/rekening", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+      { text: "Notifikasi", link: "/pengaturan/notifikasi", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+      { text: "Kelola Staf", link: "/pengaturan/staf", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+      { text: "Template Pesan Otomatis", link: "/pengaturan/template-pesan", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+      { text: "Log Aktivitas", link: "/pengaturan/log-aktivitas", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+    ],
+  },
   { text: "Kewajiban", icon: <FactCheckRoundedIcon />, link: "/kewajiban" },
   { text: "Paket Pengelola", icon: <InventoryRoundedIcon />, link: "/paket-pengelola" },
   { text: "Pengelola", icon: <GroupsRoundedIcon />, link: "/pengelola" },
@@ -39,6 +54,21 @@ const secondaryListItems = [
 
 export default function MenuContent() {
   const location = useLocation();
+  const [openDropdown, setOpenDropdown] = React.useState(null);
+
+  // Buka dropdown hanya jika path sekarang ada di bawah /pengaturan, tutup jika tidak
+  React.useEffect(() => {
+    if (location.pathname.startsWith("/pengaturan")) {
+      setOpenDropdown(0); // index 0 untuk Pengaturan
+    } else {
+      setOpenDropdown(null);
+    }
+  }, [location.pathname]);
+
+  const handleDropdown = (index) => {
+    setOpenDropdown(openDropdown === index ? null : index);
+  };
+
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: "space-between" }}>
       <List dense>
@@ -53,12 +83,33 @@ export default function MenuContent() {
       </List>
       <List dense>
         {secondaryListItems.map((item, index) => (
-          <ListItem key={index} disablePadding sx={{ display: "block" }}>
-            <ListItemButton component={Link} to={item.link} selected={location.pathname === item.link}>
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
+          <React.Fragment key={index}>
+            <ListItem disablePadding sx={{ display: "block" }}>
+              <ListItemButton
+                component={item.children ? undefined : Link}
+                to={item.children ? undefined : item.link}
+                selected={item.children ? openDropdown === index : location.pathname === item.link}
+                onClick={item.children ? () => handleDropdown(index) : undefined}
+              >
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+            {item.children && (
+              <Collapse in={openDropdown === index} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding sx={{ pl: 4 }}>
+                  {item.children.map((child, cidx) => (
+                    <ListItem key={cidx} disablePadding sx={{ display: "block" }}>
+                      <ListItemButton component={Link} to={child.link} selected={location.pathname === child.link}>
+                        <ListItemIcon>{child.icon}</ListItemIcon>
+                        <ListItemText primary={child.text} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Collapse>
+            )}
+          </React.Fragment>
         ))}
       </List>
     </Stack>

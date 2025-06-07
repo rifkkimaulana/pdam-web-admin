@@ -13,10 +13,9 @@ import PaketContent from "../pages/paket/PaketContent";
 import TagihanContent from "../pages/tagihan/TagihanContent";
 import KomplainContent from "../pages/komplain/KomplainContent";
 import PenugasanContent from "../pages/penugasan/PenugasanContent";
-import PengaturanContent from "../pages/pengaturan/PengaturanContent";
 import KewajibanContent from "../pages/kewajiban/KewajibanContent";
 
-import TambahPaket from "../pages/paket/TambahPaket";
+import TambahPaket from "../pages/submenu/tarif-paket/tambahPaket";
 import EditPaket from "../pages/paket/EditPaket";
 import StafContent from "../pages/staf/StafContent";
 import FormTambahStaf from "../pages/staf/formTambahStaf";
@@ -30,6 +29,14 @@ import PembayaranLanggananContent from "../pages/pembayaran-langganan/Pembayaran
 
 import { getToken } from "../utils/auth";
 import { toast } from "react-toastify";
+import ProfilPengelolaPerusahaan from "../pages/submenu/profil";
+import AkunKeamanan from "../pages/submenu/akun";
+import TarifPaket from "../pages/submenu/tarif-paket";
+import Rekening from "../pages/submenu/rekening";
+import Notifikasi from "../pages/submenu/notifikasi";
+import KelolaStaf from "../pages/submenu/staf";
+import TemplatePesan from "../pages/submenu/template-pesan";
+import LogAktivitas from "../pages/submenu/log-aktivitas";
 
 function PrivateRoute({ children }) {
   const navigate = useNavigate();
@@ -108,14 +115,6 @@ function AppRouter() {
             element={
               <PrivateRoute>
                 <PenugasanContent />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="pengaturan"
-            element={
-              <PrivateRoute>
-                <PengaturanContent />
               </PrivateRoute>
             }
           />
@@ -205,6 +204,79 @@ function AppRouter() {
             element={
               <PrivateRoute>
                 <PembayaranLanggananContent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengaturan/profil"
+            element={
+              <PrivateRoute>
+                <ProfilPengelolaPerusahaan />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengaturan/akun"
+            element={
+              <PrivateRoute>
+                <AkunKeamanan />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengaturan/tarif-paket"
+            element={
+              <PrivateRoute>
+                <TarifPaket />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengaturan/tarif-paket/tambah"
+            element={
+              <PrivateRoute>
+                <TambahPaket />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengaturan/rekening"
+            element={
+              <PrivateRoute>
+                <Rekening />
+              </PrivateRoute>
+            }
+          />
+         
+          <Route
+            path="pengaturan/notifikasi"
+            element={
+              <PrivateRoute>
+                <Notifikasi />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengaturan/staf"
+            element={
+              <PrivateRoute>
+                <KelolaStaf />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengaturan/template-pesan"
+            element={
+              <PrivateRoute>
+                <TemplatePesan />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="pengaturan/log-aktivitas"
+            element={
+              <PrivateRoute>
+                <LogAktivitas />
               </PrivateRoute>
             }
           />

@@ -33,6 +33,7 @@ export default function NavbarBreadcrumbs() {
     "paket-pengelola": "Paket Pengelolaan",
     pengelola: "Pengelola",
     "pembayaran-langganan": "Pembayaran Langganan",
+    kewajiban: "Kewajiban Pengelola",
   };
 
   // Ambil judul utama dan sub dari path
