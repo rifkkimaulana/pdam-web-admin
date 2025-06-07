@@ -12,7 +12,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import IconButton from "@mui/material/IconButton";
 import SearchTableContent from "../components/content-components/SearchTableContent";
 import CustomPaginationTable from "../components/content-components/CustomPaginationTable";
-import { fetchPembayaranLangganan, fetchPengelola } from "../../utils/pembayaran";
+import { fetchPembayaranLangganan, fetchPengelola, createPembayaranLangganan, fetchPrivateFile } from "../../utils/pembayaran";
 import dayjs from "dayjs";
 
 export default function Pembayaran() {
@@ -157,9 +157,18 @@ export default function Pembayaran() {
             size="small"
             color="primary"
             startIcon={<VisibilityIcon fontSize="small" />}
-            onClick={() => {
-              setBuktiImage(`/uploads/${params.row.bukti_bayar}`);
-              setOpenBuktiDialog(true);
+            onClick={async () => {
+              // Ambil nama file dari database (misal: "bukti_bayar/namafile.jpg")
+              const [folder, ...rest] = params.row.bukti_bayar.split("/");
+              const filename = rest.join("/");
+              try {
+                const blob = await fetchPrivateFile(folder, filename);
+                const url = URL.createObjectURL(blob);
+                setBuktiImage(url);
+                setOpenBuktiDialog(true);
+              } catch (err) {
+                toast.error("Gagal mengambil bukti bayar");
+              }
             }}
             sx={{ textTransform: "none" }}
           >
@@ -497,7 +506,51 @@ export default function Pembayaran() {
           <Button onClick={handleCloseTambahDialog} color="inherit" variant="outlined">
             Batal
           </Button>
-          <Button onClick={handleCloseTambahDialog} color="success" variant="contained">
+          <Button
+            onClick={async () => {
+              // Validasi sederhana
+              if (!formTambah.langganan_id || !formTambah.tanggal_bayar || !formTambah.jumlah_bayar || !formTambah.metode) {
+                toast.error("Semua field wajib diisi!");
+                return;
+              }
+              const formData = new FormData();
+              formData.append("langganan_id", formTambah.langganan_id);
+              formData.append("tanggal_bayar", formTambah.tanggal_bayar);
+              formData.append("jumlah_bayar", formTambah.jumlah_bayar);
+              formData.append("metode", formTambah.metode);
+              formData.append("status", "Menunggu");
+              if (formTambah.bukti_bayar) {
+                formData.append("bukti_bayar", formTambah.bukti_bayar);
+              }
+              try {
+                // Gunakan API util yang sudah disediakan
+                await createPembayaranLangganan(formData);
+                toast.success("Pembayaran berhasil ditambahkan!");
+                setOpenTambahDialog(false);
+                setFormTambah({
+                  langganan_id: "",
+                  tanggal_bayar: "",
+                  jumlah_bayar: "",
+                  metode: "Cash",
+                  bukti_bayar: null,
+                  bukti_bayar_url: "",
+                });
+                setPage(0); // refresh ke halaman pertama
+                setLoading(true);
+                fetchPembayaranLangganan(1, pageSize, filterStatus, searchTerm)
+                  .then((data) => {
+                    setRows(data.data);
+                    setTotalRows(data.total);
+                    setLoading(false);
+                  })
+                  .catch(() => setLoading(false));
+              } catch (err) {
+                toast.error(err.response?.data?.message || err.message || "Gagal menambah pembayaran");
+              }
+            }}
+            color="success"
+            variant="contained"
+          >
             Simpan
           </Button>
         </Box>
