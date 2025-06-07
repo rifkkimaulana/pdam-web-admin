@@ -12,8 +12,10 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+import { fetchPembayaranLangganan } from "../../utils/pembayaran";
+import { DataGrid } from "@mui/x-data-grid";
 
 // Dummy data perusahaan dan paket
 const perusahaan = {
@@ -33,61 +35,15 @@ const paketAktif = {
   status: "Aktif",
 };
 
-const rows = [
-  {
-    id: 1,
-    tanggal: "2025-06-01",
-    nominal: 200000,
-    metode: "Transfer",
-    status: "Terverifikasi",
-    bukti: "bukti_transfer_1.jpg",
-  },
-  {
-    id: 2,
-    tanggal: "2025-05-01",
-    nominal: 200000,
-    metode: "Transfer",
-    status: "Terverifikasi",
-    bukti: "bukti_transfer_2.jpg",
-  },
-];
-
-const columns = [
-  { field: "id", headerName: "No", width: 70 },
-  {
-    field: "tanggal",
-    headerName: "Tanggal",
-    width: 130,
-    valueFormatter: (params) => dayjs(params.value).format("DD-MM-YYYY"),
-  },
-  {
-    field: "nominal",
-    headerName: "Nominal",
-    width: 130,
-    valueFormatter: (params) => `Rp ${Number(params.value || 0).toLocaleString()}`,
-  },
-  { field: "metode", headerName: "Metode", width: 120 },
-  {
-    field: "status",
-    headerName: "Status",
-    width: 120,
-    renderCell: (params) => <span style={{ color: "#388e3c", fontWeight: 600 }}>{params.value}</span>,
-  },
-  {
-    field: "bukti",
-    headerName: "Bukti",
-    width: 110,
-    renderCell: () => (
-      <Button size="small" variant="outlined">
-        Lihat
-      </Button>
-    ),
-  },
-];
-
 export default function KewajibanPengelola() {
   const [openDialog, setOpenDialog] = React.useState(false);
   const [bukti, setBukti] = React.useState("");
+
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
+  const [totalRows, setTotalRows] = useState(0);
 
   const today = dayjs();
   const akhir = dayjs(paketAktif.akhir);
@@ -101,6 +57,61 @@ export default function KewajibanPengelola() {
     setOpenDialog(false);
     setBukti("");
   };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchPembayaranLangganan(page + 1, pageSize, "", "")
+      .then((data) => {
+        setRows(data.data || []);
+        setTotalRows(data.total || 0);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [page, pageSize]);
+
+  const dataGridRows = rows.map((row, idx) => ({
+    id: row.id,
+    no: page * pageSize + idx + 1,
+    tanggal: row.tanggal_bayar || row.tanggal || "-",
+    nominal: row.jumlah_bayar || row.nominal || "-",
+    metode: row.metode || "-",
+    status: row.status || "-",
+    bukti: row.bukti_bayar || row.bukti || "-",
+  }));
+
+  const columns = [
+    { field: "no", headerName: "No", width: 50 },
+    {
+      field: "tanggal",
+      headerName: "Tanggal",
+      minWidth: 120,
+      flex: 1,
+      valueFormatter: (params) => (params.value && params.value !== "-" ? dayjs(params.value).format("DD-MM-YYYY") : "-"),
+    },
+    {
+      field: "nominal",
+      headerName: "Nominal",
+      minWidth: 120,
+      flex: 1,
+      valueFormatter: (params) => (params.value && params.value !== "-" ? `Rp ${Number(params.value).toLocaleString()}` : "-"),
+    },
+    { field: "metode", headerName: "Metode", minWidth: 110, flex: 1 },
+    { field: "status", headerName: "Status", minWidth: 110, flex: 1 },
+    {
+      field: "bukti",
+      headerName: "Bukti Pembayaran",
+      minWidth: 110,
+      flex: 1,
+      renderCell: (params) =>
+        params.value && params.value !== "-" ? (
+          <Button size="small" variant="outlined">
+            Lihat
+          </Button>
+        ) : (
+          "-"
+        ),
+    },
+  ];
 
   return (
     <Box>
@@ -228,8 +239,16 @@ export default function KewajibanPengelola() {
           <Typography variant="subtitle1" sx={{ mb: 2 }}>
             Riwayat Pembayaran Pengelola
           </Typography>
-          <Box sx={{ height: 350 }}>
-            <DataGrid rows={rows} columns={columns} pageSize={5} rowsPerPageOptions={[5]} disableSelectionOnClick autoHeight={false} />
+          <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "auto" }}>
+            <DataGrid
+              rows={dataGridRows}
+              columns={columns}
+              loading={loading}
+              autoHeight
+              disableColumnMenu
+              pageSize={pageSize}
+              hideFooter={true}
+            />
           </Box>
         </CardContent>
       </Card>
