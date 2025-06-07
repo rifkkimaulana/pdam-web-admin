@@ -64,6 +64,8 @@ export default function Pembayaran() {
   });
   const [listLangganan, setListLangganan] = useState([]);
   const [openLoadingDialog, setOpenLoadingDialog] = useState(false);
+  const [loadingDialogTitle, setLoadingDialogTitle] = useState("");
+  const [loadingDialogMessage, setLoadingDialogMessage] = useState("");
   const fileInputRef = useRef();
 
   console.log("selected user ids:", checkedUserIds);
@@ -81,7 +83,7 @@ export default function Pembayaran() {
         if (typeof data.current_page === "number") {
           setPage(data.current_page - 1); // frontend 0-based
         }
-        // Sinkronkan pageSize jika backend mengembalikan per_page
+
         if (data.per_page && Number(data.per_page) !== pageSize) {
           setPageSize(Number(data.per_page));
         }
@@ -93,7 +95,7 @@ export default function Pembayaran() {
   const dataGridRows = rows.map((row, idx) => ({
     id: row.id,
     no: page * pageSize + idx + 1,
-    pelanggan: row.langganan?.user?.nama_lengkap || "-",
+    pelanggan: row.langganan?.pengelola?.user?.nama_lengkap || "-",
     perusahaan: row.langganan?.pengelola?.nama_pengelola || "-",
     jumlah_bayar: row.jumlah_bayar ?? "-",
     metode: row.metode ?? "-",
@@ -215,12 +217,22 @@ export default function Pembayaran() {
     }
     // Ambil data pembayaran pertama yang dipilih
     const pembayaran = rows.find((row) => row.id === checkedUserIds[0]);
+    if (pembayaran.status === "Diterima") {
+      toast.info("Pembayaran ini sudah diterima dan tidak bisa dikonfirmasi ulang.");
+      return;
+    } else if (pembayaran.status === "Ditolak") {
+      toast.info("Pembayaran ini sudah ditolak dan silahkan buat pembayaran baru.");
+      return;
+    }
     setSelectedPembayaran(pembayaran);
     setOpenKonfirmasiDialog(true);
   };
 
   const handleDialogKonfirmasi = async () => {
     if (!selectedPembayaran) return;
+    setLoadingDialogTitle("Proses Konfirmasi");
+    setLoadingDialogMessage("Memproses konfirmasi pembayaran...");
+    setOpenLoadingDialog(true);
     try {
       const formData = new FormData();
       formData.append("status", "Diterima");
@@ -238,11 +250,16 @@ export default function Pembayaran() {
         .catch(() => setLoading(false));
     } catch (err) {
       toast.error("Gagal mengkonfirmasi pembayaran!");
+    } finally {
+      setTimeout(() => setOpenLoadingDialog(false), 2000);
     }
   };
 
   const handleDialogTolak = async () => {
     if (!selectedPembayaran) return;
+    setLoadingDialogTitle("Proses Penolakan");
+    setLoadingDialogMessage("Memproses penolakan pembayaran...");
+    setOpenLoadingDialog(true);
     try {
       const formData = new FormData();
       formData.append("status", "Ditolak");
@@ -260,6 +277,8 @@ export default function Pembayaran() {
         .catch(() => setLoading(false));
     } catch (err) {
       toast.error("Gagal menolak pembayaran!");
+    } finally {
+      setTimeout(() => setOpenLoadingDialog(false), 2000);
     }
   };
 
@@ -287,6 +306,8 @@ export default function Pembayaran() {
       toast.warn("Pilih minimal satu pembayaran untuk dihapus.");
       return;
     }
+    setLoadingDialogTitle("Proses Penghapusan");
+    setLoadingDialogMessage("Menghapus pembayaran terpilih...");
     setOpenLoadingDialog(true);
     let successCount = 0;
     let errorCount = 0;
@@ -408,7 +429,7 @@ export default function Pembayaran() {
           <Box sx={{ mt: 2, p: 2, borderRadius: 2, boxShadow: 1 }}>
             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
               <Grid item xs={12} md={6}>
-                <Typography variant="h6">Riwayat Pembayaran</Typography>
+                <Typography variant="h6">Data Pembayaran Langganan</Typography>
               </Grid>
               <Grid item xs={12} md={6}>
                 <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
@@ -527,24 +548,9 @@ export default function Pembayaran() {
         <DialogContent>
           {selectedPembayaran ? (
             <Box>
-              <Grid container>
-                <Grid item xs={5}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Nama Pelanggan
-                  </Typography>
-                </Grid>
-                <Grid item xs={2}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    :
-                  </Typography>
-                </Grid>
-                <Grid item xs={5}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    {selectedPembayaran.langganan?.user?.nama_lengkap || "-"}
-                  </Typography>
-                </Grid>
-              </Grid>
-
+              <Typography variant="subtitle1" gutterBottom>
+                Nama Pelanggan: {selectedPembayaran.langganan?.pengelola?.user?.nama_lengkap || "-"}
+              </Typography>
               <Divider color="white" />
               <Typography variant="subtitle1" gutterBottom>
                 Nama Perusahaan: {selectedPembayaran.langganan?.pengelola?.nama_pengelola || "-"}
@@ -711,10 +717,10 @@ export default function Pembayaran() {
         </Box>
       </Dialog>
       <Dialog open={openLoadingDialog} maxWidth="xs" fullWidth>
-        <DialogTitle>Proses Penghapusan</DialogTitle>
+        <DialogTitle>{loadingDialogTitle}</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 120 }}>
           <Typography variant="body1" sx={{ mb: 2 }}>
-            Menghapus pembayaran terpilih...
+            {loadingDialogMessage}
           </Typography>
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
             <span

@@ -397,7 +397,7 @@ export default function UserManagement() {
                     <FilterList style={{ fontSize: 20, marginRight: 8 }} />
                     Filter Status Langganan
                   </MenuItem>
-                  <MenuItem onClick={handleMenuClose}>
+                  <MenuItem onClick={handleMenuClose} disabled>
                     <Update style={{ fontSize: 20, marginRight: 8 }} />
                     Perbaharui Langganan
                   </MenuItem>
