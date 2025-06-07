@@ -29,6 +29,8 @@ const mainListItems = [
   { text: "Komplain", icon: <ReportProblemRoundedIcon />, link: "/komplain" },
   { text: "Penugasan", icon: <AssignmentTurnedInRoundedIcon />, link: "/penugasan" },
 ];
+const jabatan = localStorage.getItem("jabatan");
+
 const secondaryListItems = [
   {
     text: "Pengaturan",
@@ -45,15 +47,19 @@ const secondaryListItems = [
     ],
   },
   { text: "Kewajiban", icon: <FactCheckRoundedIcon />, link: "/kewajiban" },
-  {
-    text: "Master Admin",
-    icon: <FactCheckRoundedIcon />,
-    children: [
-      { text: "Paket Pengelola", link: "/paket-pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-      { text: "Pengelola", link: "/pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-      { text: "Pembayaran", link: "/pembayaran-langganan", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-    ],
-  },
+  ...(jabatan === "Administrator"
+    ? [
+        {
+          text: "Master Admin",
+          icon: <FactCheckRoundedIcon />,
+          children: [
+            { text: "Paket Pengelola", link: "/paket-pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+            { text: "Pengelola", link: "/pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+            { text: "Pembayaran", link: "/pembayaran-langganan", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+          ],
+        },
+      ]
+    : []),
 ];
 
 export default function MenuContent() {
