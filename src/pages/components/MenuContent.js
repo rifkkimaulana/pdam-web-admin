@@ -29,42 +29,53 @@ const mainListItems = [
   { text: "Komplain", icon: <ReportProblemRoundedIcon />, link: "/komplain" },
   { text: "Penugasan", icon: <AssignmentTurnedInRoundedIcon />, link: "/penugasan" },
 ];
-const jabatan = localStorage.getItem("jabatan");
-
-const secondaryListItems = [
-  {
-    text: "Pengaturan",
-    icon: <SettingsApplicationsRoundedIcon />,
-    children: [
-      { text: "Profil Pengelola & Perusahaan", link: "/pengaturan/profil", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-      { text: "Akun & Keamanan", link: "/pengaturan/akun", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-      { text: "Pengaturan Tarif & Paket", link: "/pengaturan/tarif-paket", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-      { text: "Pengaturan Rekening/Bank", link: "/pengaturan/rekening", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-      { text: "Notifikasi", link: "/pengaturan/notifikasi", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-      { text: "Kelola Staf", link: "/pengaturan/staf", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-      { text: "Template Pesan Otomatis", link: "/pengaturan/template-pesan", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-      { text: "Log Aktivitas", link: "/pengaturan/log-aktivitas", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-    ],
-  },
-  { text: "Kewajiban", icon: <FactCheckRoundedIcon />, link: "/kewajiban" },
-  ...(jabatan === "Administrator"
-    ? [
-        {
-          text: "Master Admin",
-          icon: <FactCheckRoundedIcon />,
-          children: [
-            { text: "Paket Pengelola", link: "/paket-pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-            { text: "Pengelola", link: "/pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-            { text: "Pembayaran", link: "/pembayaran-langganan", icon: <ChevronRightRoundedIcon fontSize="small" /> },
-          ],
-        },
-      ]
-    : []),
-];
 
 export default function MenuContent() {
   const location = useLocation();
   const [openDropdown, setOpenDropdown] = React.useState(null);
+  const [jabatan, setJabatan] = React.useState("");
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setJabatan((user.jabatan || "").trim().toLowerCase());
+  }, []);
+
+  // Buat secondaryListItems secara dinamis berdasarkan jabatan
+  const secondaryListItems = React.useMemo(
+    () => [
+      {
+        text: "Pengaturan",
+        icon: <SettingsApplicationsRoundedIcon />,
+        children: [
+          { text: "Profil Pengelola & Perusahaan", link: "/pengaturan/profil", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+          { text: "Akun & Keamanan", link: "/pengaturan/akun", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+          { text: "Pengaturan Tarif & Paket", link: "/pengaturan/tarif-paket", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+          { text: "Pengaturan Rekening/Bank", link: "/pengaturan/rekening", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+          { text: "Notifikasi", link: "/pengaturan/notifikasi", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+          { text: "Kelola Staf", link: "/pengaturan/staf", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+          { text: "Template Pesan Otomatis", link: "/pengaturan/template-pesan", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+          { text: "Log Aktivitas", link: "/pengaturan/log-aktivitas", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+        ],
+      },
+      ...(jabatan === "administrator" || jabatan === "pengelola"
+        ? [{ text: "Kewajiban", icon: <FactCheckRoundedIcon />, link: "/kewajiban" }]
+        : []),
+      ...(jabatan === "administrator"
+        ? [
+            {
+              text: "Master Admin",
+              icon: <FactCheckRoundedIcon />,
+              children: [
+                { text: "Paket Pengelola", link: "/paket-pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+                { text: "Pengelola", link: "/pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+                { text: "Pembayaran", link: "/pembayaran-langganan", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+              ],
+            },
+          ]
+        : []),
+    ],
+    [jabatan]
+  );
 
   React.useEffect(() => {
     if (location.pathname.startsWith("/pengaturan")) {

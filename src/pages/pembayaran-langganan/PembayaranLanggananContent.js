@@ -12,6 +12,7 @@ import {
   DialogActions,
   Button,
   Grid,
+  Chip,
 } from "@mui/material";
 import { Verified, FilterList } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -165,10 +166,44 @@ export default function Pembayaran() {
       flex: 1,
       minWidth: 160,
     },
-    { field: "jumlah_bayar", headerName: "Jumlah Pembayaran", flex: 1, minWidth: 120 },
+    {
+      field: "jumlah_bayar",
+      headerName: "Jumlah Pembayaran",
+      flex: 1,
+      minWidth: 120,
+      align: "right",
+      headerAlign: "right",
+      renderCell: (params) => {
+        const value = params.row.jumlah_bayar;
+        if (value !== undefined && value !== null && value !== "-") {
+          return `Rp ${Number(value).toLocaleString("id-ID")}`;
+        }
+        return "-";
+      },
+    },
     { field: "metode", headerName: "Metode Pembayaran", flex: 1, minWidth: 110 },
     { field: "tanggal_bayar", headerName: "Tanggal Pembayaran", flex: 1, minWidth: 120 },
-    { field: "status", headerName: "Status Pembayaran", flex: 1, minWidth: 110 },
+    {
+      field: "status",
+      headerName: "Status Pembayaran",
+      flex: 1,
+      minWidth: 110,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const status = params.row.status;
+        let color = "default";
+        let label = status;
+        if (status === "Diterima") {
+          color = "success";
+        } else if (status === "Ditolak") {
+          color = "error";
+        } else if (status === "Menunggu") {
+          color = "warning";
+        }
+        return status && status !== "-" ? <Chip label={label} color={color} size="small" variant="outlined" /> : "-";
+      },
+    },
     {
       field: "bukti_bayar",
       headerName: "Bukti Pembayaran",
