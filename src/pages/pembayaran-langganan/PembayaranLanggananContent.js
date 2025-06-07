@@ -313,6 +313,20 @@ export default function Pembayaran() {
     }
   };
 
+  useEffect(() => {
+    if (formTambah.langganan_id && listLangganan.length > 0) {
+      const selected = listLangganan.find((l) => String(l.id) === String(formTambah.langganan_id));
+      if (selected && selected.paket && selected.paket.harga_paket) {
+        setFormTambah((prev) => ({ ...prev, jumlah_bayar: selected.paket.harga_paket }));
+      }
+    }
+    // Jika langganan_id kosong, reset jumlah_bayar
+    if (!formTambah.langganan_id) {
+      setFormTambah((prev) => ({ ...prev, jumlah_bayar: "" }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formTambah.langganan_id, listLangganan]);
+
   return (
     <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
       <Grid container spacing={2} columns={12} sx={{ mb: 2 }}>
@@ -459,11 +473,11 @@ export default function Pembayaran() {
               </Typography>
               {selectedPembayaran.bukti_bayar && selectedPembayaran.bukti_bayar !== "-" && (
                 <Box sx={{ mt: 2, textAlign: "center" }}>
-                  <img
-                    src={`/uploads/${selectedPembayaran.bukti_bayar}`}
-                    alt="Bukti Pembayaran"
-                    style={{ maxWidth: 300, maxHeight: 300 }}
-                  />
+                  {buktiImage ? (
+                    <img src={buktiImage} alt="Bukti Pembayaran" style={{ maxWidth: 300, maxHeight: 300 }} />
+                  ) : (
+                    <Typography variant="body2">Memuat gambar...</Typography>
+                  )}
                 </Box>
               )}
             </Box>
@@ -518,6 +532,7 @@ export default function Pembayaran() {
               value={formTambah.jumlah_bayar}
               onChange={handleFormTambahChange}
               required
+              InputProps={{ readOnly: true }}
             />
             <TextField select label="Metode Pembayaran" name="metode" value={formTambah.metode} onChange={handleFormTambahChange} required>
               <MenuItem value="Cash">Cash</MenuItem>
