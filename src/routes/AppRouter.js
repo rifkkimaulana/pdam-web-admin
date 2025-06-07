@@ -9,17 +9,13 @@ import Index from "../pages/Index";
 import DashboardContent from "../pages/dashboard/DashboardContent";
 import LaporanContent from "../pages/laporan/LaporanContent";
 import PelangganContent from "../pages/pelanggan/PelangganContent";
-import PaketContent from "../pages/paket/PaketContent";
+
 import TagihanContent from "../pages/tagihan/TagihanContent";
 import KomplainContent from "../pages/komplain/KomplainContent";
 import PenugasanContent from "../pages/penugasan/PenugasanContent";
 import KewajibanContent from "../pages/kewajiban/KewajibanContent";
 
 import TambahPaket from "../pages/submenu/tarif-paket/tambahPaket";
-import EditPaket from "../pages/paket/EditPaket";
-import StafContent from "../pages/staf/StafContent";
-import FormTambahStaf from "../pages/staf/formTambahStaf";
-import FormUbahStaf from "../pages/staf/formUbahStaf";
 
 import Pengelola from "../pages/pengelola/PengelolaContent";
 import TambahPengelola from "../pages/pengelola/TambahPengelola";
@@ -86,14 +82,7 @@ function AppRouter() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="paket/list"
-            element={
-              <PrivateRoute>
-                <PaketContent />
-              </PrivateRoute>
-            }
-          />
+
           <Route
             path="tagihan"
             element={
@@ -160,46 +149,6 @@ function AppRouter() {
           />
 
           <Route
-            path="paket/tambah"
-            element={
-              <PrivateRoute>
-                <TambahPaket />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/paket/edit/:id"
-            element={
-              <PrivateRoute>
-                <EditPaket />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="staf"
-            element={
-              <PrivateRoute>
-                <StafContent />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="staf/tambah"
-            element={
-              <PrivateRoute>
-                <FormTambahStaf />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="staf/edit/:id"
-            element={
-              <PrivateRoute>
-                <FormUbahStaf />
-              </PrivateRoute>
-            }
-          />
-          <Route
             path="pembayaran-langganan"
             element={
               <PrivateRoute>
@@ -247,7 +196,7 @@ function AppRouter() {
               </PrivateRoute>
             }
           />
-         
+
           <Route
             path="pengaturan/notifikasi"
             element={

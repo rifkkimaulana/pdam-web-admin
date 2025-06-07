@@ -25,8 +25,6 @@ const mainListItems = [
   { text: "Dashboard", icon: <DashboardRoundedIcon />, link: "/dashboard" },
   { text: "Laporan", icon: <BarChartRoundedIcon />, link: "/laporan" },
   { text: "Pelanggan", icon: <GroupsRoundedIcon />, link: "/pelanggan" },
-  { text: "Staf", icon: <GroupsRoundedIcon />, link: "/staf" },
-  { text: "Paket", icon: <InventoryRoundedIcon />, link: "/paket/list" },
   { text: "Tagihan", icon: <ReceiptRoundedIcon />, link: "/tagihan" },
   { text: "Komplain", icon: <ReportProblemRoundedIcon />, link: "/komplain" },
   { text: "Penugasan", icon: <AssignmentTurnedInRoundedIcon />, link: "/penugasan" },
@@ -47,19 +45,30 @@ const secondaryListItems = [
     ],
   },
   { text: "Kewajiban", icon: <FactCheckRoundedIcon />, link: "/kewajiban" },
-  { text: "Paket Pengelola", icon: <InventoryRoundedIcon />, link: "/paket-pengelola" },
-  { text: "Pengelola", icon: <GroupsRoundedIcon />, link: "/pengelola" },
-  { text: "Pembayaran", icon: <ReceiptRoundedIcon />, link: "/pembayaran-langganan" },
+  {
+    text: "Master Admin",
+    icon: <FactCheckRoundedIcon />,
+    children: [
+      { text: "Paket Pengelola", link: "/paket-pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+      { text: "Pengelola", link: "/pengelola", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+      { text: "Pembayaran", link: "/pembayaran-langganan", icon: <ChevronRightRoundedIcon fontSize="small" /> },
+    ],
+  },
 ];
 
 export default function MenuContent() {
   const location = useLocation();
   const [openDropdown, setOpenDropdown] = React.useState(null);
 
-  // Buka dropdown hanya jika path sekarang ada di bawah /pengaturan, tutup jika tidak
   React.useEffect(() => {
     if (location.pathname.startsWith("/pengaturan")) {
-      setOpenDropdown(0); // index 0 untuk Pengaturan
+      setOpenDropdown(0);
+    } else if (
+      location.pathname.startsWith("/paket-pengelola") ||
+      location.pathname.startsWith("/pengelola") ||
+      location.pathname.startsWith("/pembayaran-langganan")
+    ) {
+      setOpenDropdown(2); // index 2 untuk Master Admin
     } else {
       setOpenDropdown(null);
     }
