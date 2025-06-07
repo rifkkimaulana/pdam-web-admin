@@ -401,7 +401,7 @@ export default function UserManagement() {
                     <Update style={{ fontSize: 20, marginRight: 8 }} />
                     Perbaharui Langganan
                   </MenuItem>
-                  <MenuItem onClick={handleMenuClose}>
+                  <MenuItem component={Link} to="/pembayaran-langganan" onClick={handleMenuClose}>
                     <Verified style={{ fontSize: 20, marginRight: 8 }} />
                     Verifikasi Pembayaran
                   </MenuItem>
