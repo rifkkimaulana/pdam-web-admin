@@ -31,6 +31,7 @@ export default function AkunKeamanan({ onBack }) {
           deskripsi: pengelolaData.deskripsi,
         });
         setUser({
+          id: pengelolaData.user?.id,
           nama_lengkap: pengelolaData.user?.nama_lengkap || "",
           username: pengelolaData.user?.username || "",
           email: pengelolaData.user?.email || "",
@@ -56,12 +57,14 @@ export default function AkunKeamanan({ onBack }) {
     if (onBack) onBack();
   };
   const handleSimpan = async () => {
-    const userId = localStorage.getItem("user_id");
+    const userId = user?.id;
     if (!userId) {
-      toast.error("User ID tidak ditemukan di localStorage.");
+      toast.dismiss();
+      toast.error("User ID tidak ditemukan.");
       return;
     }
     if (form.password_baru !== form.konfirmasi_password) {
+      toast.dismiss();
       toast.error("Konfirmasi password tidak sama dengan password baru.");
       return;
     }
@@ -70,16 +73,20 @@ export default function AkunKeamanan({ onBack }) {
         password_lama: form.password_lama,
         password: form.password_baru,
       });
+      toast.dismiss();
       toast.success("Password berhasil diubah!");
       setForm({ password_lama: "", password_baru: "", konfirmasi_password: "" });
     } catch (err) {
       const msg = err?.response?.data?.message || "Gagal mengubah password.";
+      toast.dismiss();
       toast.error(msg);
     }
   };
 
   if (loading) return <Typography>Loading...</Typography>;
   if (!user || !pengelola) {
+    // Hapus toast error sebelumnya sebelum menampilkan baru
+    toast.dismiss();
     toast.error("Gagal memuat data akun/pengelola.");
     return <Typography>Gagal memuat data akun/pengelola.</Typography>;
   }
