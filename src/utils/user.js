@@ -48,18 +48,9 @@ export const createUser = async (data) => {
 };
 
 // PUT: Update user
-export const updateUser = async (id, data, isMultipart = false) => {
-  if (isMultipart) {
-    // FormData, biarkan browser set Content-Type
-    const response = await api.put(`/users/${id}`, data);
-    return response.data;
-  } else {
-    // Raw JSON, set Content-Type
-    const response = await api.put(`/users/${id}`, data, {
-      headers: { "Content-Type": "application/json" },
-    });
-    return response.data;
-  }
+export const updateUser = async (id, data) => {
+  const response = await api.put(`/users/${id}`, data);
+  return response.data;
 };
 
 // DELETE: Hapus user
